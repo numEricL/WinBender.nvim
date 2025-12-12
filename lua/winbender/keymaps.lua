@@ -8,27 +8,50 @@ local keymaps = {}
 
 local function focus_next(args)
     local winid = core.find_next_floating_window(args.dir)
+    if not winid then
+        return
+    end
     core.focus_window(winid)
 end
 
 local function reset_window(args)
-    state.restore_config(state.winid)
+    local winid = core.get_current_floating_window()
+    if not winid then
+        return
+    end
+    state.restore_config(winid)
 end
 
 local function reposition(args)
-    core.reposition_floating_window(state.winid, args.x_delta, args.y_delta)
+    local winid = core.get_current_floating_window()
+    if not winid then
+        return
+    end
+    core.reposition_floating_window(winid, args.x_delta, args.y_delta)
 end
 
 local function resize(args)
-    core.resize_floating_window(state.winid, args.x_delta, args.y_delta)
+    local winid = core.get_current_floating_window()
+    if not winid then
+        return
+    end
+    core.resize_floating_window(winid, args.x_delta, args.y_delta)
 end
 
 local function update_anchor(args)
-    core.update_anchor(state.winid, args.anchor)
+    local winid = core.get_current_floating_window()
+    if not winid then
+        return
+    end
+    core.update_anchor(winid, args.anchor)
 end
 
 local function resize_dir(args)
-    local old_anchor = core.get_anchor(state.winid)
+    local winid = core.get_current_floating_window()
+    if not winid then
+        return
+    end
+    local old_anchor = core.get_anchor(winid)
     local anchor = old_anchor
     if args.dir == 'up' then
         anchor = 'S' .. anchor:sub(2,2)
@@ -39,9 +62,9 @@ local function resize_dir(args)
     elseif args.dir == 'right' then
         anchor = anchor:sub(1,1) .. 'W'
     end
-    core.update_anchor(state.winid, anchor)
-    core.resize_floating_window(state.winid, args.x_delta, args.y_delta)
-    core.update_anchor(state.winid, old_anchor)
+    core.update_anchor(winid, anchor)
+    core.resize_floating_window(winid, args.x_delta, args.y_delta)
+    core.update_anchor(winid, old_anchor)
 end
 
 local function get_maps()

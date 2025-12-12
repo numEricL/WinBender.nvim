@@ -1,7 +1,6 @@
 local M = {}
 
-M.winid = nil
-M.old_winid = nil
+M.winid_on_enable = nil
 local win_config = {}
 
 function M.save_config(winid)
@@ -15,16 +14,6 @@ function M.restore_config(winid)
         return
     end
     vim.api.nvim_win_set_config(winid, win_config[winid])
-end
-
-function M.restore_anchor(winid)
-    if win_config[winid] == nil then
-        return
-    end
-    local anchor = win_config[winid].anchor
-    local config = vim.api.nvim_win_get_config(winid)
-    config.anchor = anchor
-    vim.api.nvim_win_set_config(winid, config)
 end
 
 return M

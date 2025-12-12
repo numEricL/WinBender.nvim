@@ -2,7 +2,7 @@ local M = {}
 
 local state  = require("winbender.state")
 
-local function validate_floating_window(winid)
+function M.validate_floating_window(winid)
     if not vim.api.nvim_win_is_valid(winid) then
         vim.notify("Invalid window id: " .. tostring(winid), vim.log.levels.ERROR)
         return false
@@ -12,14 +12,20 @@ local function validate_floating_window(winid)
         vim.notify("Window " .. winid .. " is not a floating window", vim.log.levels.ERROR)
         return false
     end
+    state.save_config(winid)
     return true
 end
 
-function M.reposition_floating_window(winid, x_delta, y_delta)
-    if not validate_floating_window(winid) then
-        return
+function M.get_current_floating_window()
+    local cur_winid = vim.api.nvim_get_current_win()
+    if M.validate_floating_window(cur_winid) then
+        return cur_winid
+    else
+        return nil
     end
-    state.save_config(winid)
+end
+
+function M.reposition_floating_window(winid, x_delta, y_delta)
     local config = vim.api.nvim_win_get_config(winid)
     config.col = config.col + x_delta
     config.row = config.row + y_delta
@@ -27,11 +33,6 @@ function M.reposition_floating_window(winid, x_delta, y_delta)
 end
 
 function M.resize_floating_window(winid, x_delta, y_delta)
-    if not validate_floating_window(winid) then
-        return
-    end
-    state.save_config(winid)
-
     local config = vim.api.nvim_win_get_config(winid)
     config.height = math.max(config.height + y_delta, 1)
     config.width = math.max(config.width + x_delta, 1)
@@ -83,10 +84,6 @@ function M.find_floating_window(dir)
 end
 
 function M.focus_window(winid)
-    if not validate_floating_window(winid) then
-        return
-    end
-    state.winid = winid
     vim.api.nvim_set_current_win(winid)
     vim.notify("Winbender Active: winid " .. tostring(winid), vim.log.levels.INFO)
 end
@@ -114,9 +111,6 @@ local function get_floating_window_size(config)
 end
 
 function M.update_anchor(winid, anchor)
-    if not validate_floating_window(winid) then
-        return
-    end
     local config = vim.api.nvim_win_get_config(winid)
     local width, height = get_floating_window_size(config)
 
@@ -134,9 +128,6 @@ function M.update_anchor(winid, anchor)
 end
 
 function M.get_anchor(winid)
-   if not validate_floating_window(winid) then
-       return nil
-   end
    local config = vim.api.nvim_win_get_config(winid)
    return config.anchor
 end
