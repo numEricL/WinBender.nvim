@@ -7,7 +7,8 @@ local config = require("winbender.config")
 local keymaps = {}
 
 local function focus_next(args)
-    core.focus_next_floating_window(args.dir)
+    local winid = core.find_next_floating_window(args.dir)
+    core.focus_window(winid)
 end
 
 local function reset_window(args)
@@ -27,7 +28,8 @@ local function update_anchor(args)
 end
 
 local function resize_dir(args)
-    local anchor = core.get_anchor(state.winid)
+    local old_anchor = core.get_anchor(state.winid)
+    local anchor = old_anchor
     if args.dir == 'up' then
         anchor = 'S' .. anchor:sub(2,2)
     elseif args.dir == 'down' then
@@ -39,7 +41,7 @@ local function resize_dir(args)
     end
     core.update_anchor(state.winid, anchor)
     core.resize_floating_window(state.winid, args.x_delta, args.y_delta)
-    core.restore_anchor(state.winid)
+    core.update_anchor(state.winid, old_anchor)
 end
 
 local function get_maps()

@@ -19,10 +19,10 @@ local defaults = {
         increase_up = 'K',
         increase_right = 'L',
 
-        decrease_left = '<c-h>',
-        decrease_down = '<c-j>',
-        decrease_up = '<c-k>',
-        decrease_right = '<c-l>',
+        decrease_left = '<c-l>',
+        decrease_down = '<c-k>',
+        decrease_up = '<c-j>',
+        decrease_right = '<c-h>',
 
         increase_width = '>',
         decrease_width = '<',

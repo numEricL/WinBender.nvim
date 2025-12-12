@@ -38,7 +38,7 @@ function M.resize_floating_window(winid, x_delta, y_delta)
     vim.api.nvim_win_set_config(winid, config)
 end
 
-local function find_next_floating_window(dir)
+function M.find_next_floating_window(dir)
     local cur_winid = vim.api.nvim_get_current_win()
     local wins = vim.api.nvim_tabpage_list_wins(0)
     table.sort(wins)
@@ -72,39 +72,23 @@ local function find_next_floating_window(dir)
 end
 
 -- checks the current window first, then other windows in descending order by winid
-function find_floating_window(dir)
+function M.find_floating_window(dir)
     local cur_win = vim.api.nvim_get_current_win()
     local config = vim.api.nvim_win_get_config(cur_win)
     if config.relative ~= "" then
         return cur_win
     else
-        return find_next_floating_window(dir)
+        return M.find_next_floating_window(dir)
     end
 end
 
-local function focus_window(winid)
+function M.focus_window(winid)
     if not validate_floating_window(winid) then
         return
     end
     state.winid = winid
     vim.api.nvim_set_current_win(winid)
     vim.notify("Winbender Active: winid " .. tostring(winid), vim.log.levels.INFO)
-end
-
-function M.focus_floating_window(dir)
-    local winid = find_floating_window(dir)
-    if winid then
-        focus_window(winid)
-    end
-    return winid
-end
-
-function M.focus_next_floating_window(dir)
-    local winid = find_next_floating_window(dir)
-    if winid then
-        focus_window(winid)
-    end
-    return winid
 end
 
 local function get_floating_window_size(config)
