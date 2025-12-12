@@ -2,12 +2,12 @@ local M = {}
 
 local core = require("winbender.core")
 local state = require("winbender.state")
-local options = require("winbender.config").options
+local config = require("winbender.config")
 
 local keymaps = {}
 
 local function focus_next(args)
-    core.focus_next_floating_window()
+    core.focus_next_floating_window(args.dir)
 end
 
 local function reset_window(args)
@@ -26,25 +26,62 @@ local function update_anchor(args)
     core.update_anchor(state.winid, args.anchor)
 end
 
-local keymap_defaults = {
-    focus_next       = { map = 'f', func = focus_next,     args = {} },
-    reset_window     = { map = 'r', func = reset_window,   args = {} },
-    shift_left       = { map = 'h', func = reposition,     args = {x_delta = -1, y_delta =  0} },
-    shift_right      = { map = 'l', func = reposition,     args = {x_delta =  1, y_delta =  0} },
-    shift_down       = { map = 'j', func = reposition,     args = {x_delta =  0, y_delta =  1} },
-    shift_up         = { map = 'k', func = reposition,     args = {x_delta =  0, y_delta = -1} },
-    width_increase   = { map = '>', func = resize,         args = {x_delta =  1, y_delta =  0} },
-    width_decrease   = { map = '<', func = resize,         args = {x_delta = -1, y_delta =  0} },
-    height_increase  = { map = '+', func = resize,         args = {x_delta =  0, y_delta =  1} },
-    height_decrease  = { map = '-', func = resize,         args = {x_delta =  0, y_delta = -1} },
-    anchor_NW        = { map = 'q', func = update_anchor,  args = {anchor = 'NW'} },
-    anchor_NE        = { map = 'w', func = update_anchor,  args = {anchor = 'NE'} },
-    anchor_SW        = { map = 'a', func = update_anchor,  args = {anchor = 'SW'} },
-    anchor_SE        = { map = 's', func = update_anchor,  args = {anchor = 'SE'} },
-}
+local function resize_dir(args)
+    local anchor = core.get_anchor(state.winid)
+    if args.dir == 'up' then
+        anchor = 'S' .. anchor:sub(2,2)
+    elseif args.dir == 'down' then
+        anchor = 'N' .. anchor:sub(2,2)
+    elseif args.dir == 'left' then
+        anchor = anchor:sub(1,1) .. 'E'
+    elseif args.dir == 'right' then
+        anchor = anchor:sub(1,1) .. 'W'
+    end
+    core.update_anchor(state.winid, anchor)
+    core.resize_floating_window(state.winid, args.x_delta, args.y_delta)
+    core.restore_anchor(state.winid)
+end
+
+local function get_maps()
+    local opts = config.get_options()
+    local keys = opts.keymaps
+    local p_sz = opts.step_size.position
+    local s_sz = opts.step_size.size
+    local maps = {
+        focus_next   = { map = keys.focus_next,   func = focus_next,   args = {dir = 'forward'} },
+        focus_prev   = { map = keys.focus_prev,   func = focus_next,   args = {dir = 'backward'} },
+        reset_window = { map = keys.reset_window, func = reset_window, args = {} },
+
+        shift_left  = { map = keys.shift_left,  func = reposition, args = {x_delta = -1*p_sz, y_delta =  0*p_sz} },
+        shift_right = { map = keys.shift_right, func = reposition, args = {x_delta =  1*p_sz, y_delta =  0*p_sz} },
+        shift_down  = { map = keys.shift_down,  func = reposition, args = {x_delta =  0*p_sz, y_delta =  1*p_sz} },
+        shift_up    = { map = keys.shift_up,    func = reposition, args = {x_delta =  0*p_sz, y_delta = -1*p_sz} },
+
+        increase_left  = { map = keys.increase_left,  func = resize_dir, args = {dir = 'left',  x_delta =  1*s_sz, y_delta =  0*s_sz} },
+        increase_right = { map = keys.increase_right, func = resize_dir, args = {dir = 'right', x_delta =  1*s_sz, y_delta =  0*s_sz} },
+        increase_down  = { map = keys.increase_down,  func = resize_dir, args = {dir = 'down',  x_delta =  0*s_sz, y_delta =  1*s_sz} },
+        increase_up    = { map = keys.increase_up,    func = resize_dir, args = {dir = 'up',    x_delta =  0*s_sz, y_delta =  1*s_sz} },
+
+        decrease_left  = { map = keys.decrease_left,  func = resize_dir, args = {dir = 'left',  x_delta = -1*s_sz, y_delta =  0*s_sz} },
+        decrease_right = { map = keys.decrease_right, func = resize_dir, args = {dir = 'right', x_delta = -1*s_sz, y_delta =  0*s_sz} },
+        decrease_down  = { map = keys.decrease_down,  func = resize_dir, args = {dir = 'down',  x_delta =  0*s_sz, y_delta = -1*s_sz} },
+        decrease_up    = { map = keys.decrease_up,    func = resize_dir, args = {dir = 'up',    x_delta =  0*s_sz, y_delta = -1*s_sz} },
+
+        increase_width  = { map = keys.increase_width,  func = resize, args = {x_delta =  1*s_sz, y_delta =  0*s_sz} },
+        decrease_width  = { map = keys.decrease_width,  func = resize, args = {x_delta = -1*s_sz, y_delta =  0*s_sz} },
+        increase_height = { map = keys.increase_height, func = resize, args = {x_delta =  0*s_sz, y_delta =  1*s_sz} },
+        decrease_height = { map = keys.decrease_height, func = resize, args = {x_delta =  0*s_sz, y_delta = -1*s_sz} },
+
+        anchor_NW = { map = keys.anchor_NW, func = update_anchor,  args = {anchor = 'NW'} },
+        anchor_NE = { map = keys.anchor_NE, func = update_anchor,  args = {anchor = 'NE'} },
+        anchor_SW = { map = keys.anchor_SW, func = update_anchor,  args = {anchor = 'SW'} },
+        anchor_SE = { map = keys.anchor_SE, func = update_anchor,  args = {anchor = 'SE'} },
+    }
+    return maps
+end
 
 function M.set_winbender_maps()
-    for action, mapping in pairs(keymap_defaults) do
+    for action, mapping in pairs(get_maps()) do
         vim.keymap.set('n', mapping.map, function()
             mapping.func(mapping.args)
         end, { desc = "Winbender: " .. action })
@@ -52,7 +89,7 @@ function M.set_winbender_maps()
 end
 
 function M.save()
-    for action, mapping in pairs(keymap_defaults) do
+    for action, mapping in pairs(get_maps()) do
         local rhs = vim.fn.maparg(mapping.map, 'n', 0, 1)
         if not vim.tbl_isempty(rhs) then
             table.insert(keymaps, rhs)
@@ -61,7 +98,7 @@ function M.save()
 end
 
 function M.restore()
-    for _, mapping in pairs(keymap_defaults) do
+    for _, mapping in pairs(get_maps()) do
         vim.api.nvim_del_keymap('n', mapping.map)
     end
     while #keymaps > 0 do
