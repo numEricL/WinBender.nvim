@@ -35,8 +35,8 @@ local defaults = {
         anchor_SE = 's',
     },
     step_size = {
-        position = 1,
-        size = 1,
+        position = 5,
+        size = 5,
     },
 }
 
