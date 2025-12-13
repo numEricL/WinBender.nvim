@@ -1,11 +1,12 @@
 local M = {}
 
 local config  = require("winbender.config")
-local state   = require("winbender.state")
-local core    = require("winbender.core")
-local keymaps = require("winbender.keymaps")
 
 local function enable()
+    local state   = require("winbender.state")
+    local core    = require("winbender.core")
+    local keymaps = require("winbender.keymaps")
+
     local winid_on_enable = vim.api.nvim_get_current_win()
     local winid = core.find_floating_window('forward')
     if winid then
@@ -22,6 +23,10 @@ local function enable()
 end
 
 local function disable()
+    local state   = require("winbender.state")
+    local core    = require("winbender.core")
+    local keymaps = require("winbender.keymaps")
+
     core.focus_window(state.winid_on_enable)
     state.restore_titles()
     state.winid_on_enable = nil
@@ -29,6 +34,8 @@ local function disable()
 end
 
 function M.toggle()
+    local state   = require("winbender.state")
+
     if state.winid_on_enable == nil then
         enable()
     else
