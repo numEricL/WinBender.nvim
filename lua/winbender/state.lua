@@ -4,6 +4,10 @@ M.winid_on_enable = nil
 local quick_access_index = {}
 local win_config = {}
 
+function M.clear_win_configs()
+    win_config = {}
+end
+
 function M.save_config(winid)
     if win_config[winid] == nil then
         win_config[winid] = vim.api.nvim_win_get_config(winid)
@@ -48,7 +52,6 @@ function M.update_titles_with_quick_access()
         elseif type(win.title) == "string" then
             new_title = label .. win.title
         end
-        print(vim.inspect(new_title))
 
         local config = vim.api.nvim_win_get_config(win.winid)
         config.title = new_title
@@ -56,12 +59,13 @@ function M.update_titles_with_quick_access()
     end
 end
 
-
 function M.restore_titles()
     for _, win in ipairs(quick_access_index) do
-        local config = vim.api.nvim_win_get_config(win.winid)
-        config.title = win.title
-        vim.api.nvim_win_set_config(win.winid, config)
+        if vim.api.nvim_win_is_valid(win.winid) then
+            local config = vim.api.nvim_win_get_config(win.winid)
+            config.title = win.title
+            vim.api.nvim_win_set_config(win.winid, config)
+        end
     end
 end
 

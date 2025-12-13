@@ -4,12 +4,12 @@ local state  = require("winbender.state")
 
 function M.validate_floating_window(winid)
     if not vim.api.nvim_win_is_valid(winid) then
-        vim.notify("Invalid window id: " .. tostring(winid), vim.log.levels.ERROR)
+        vim.notify("WinBender: Invalid window id: " .. tostring(winid), vim.log.levels.ERROR)
         return false
     end
     local config = vim.api.nvim_win_get_config(winid)
     if not config.relative or config.relative == "" then
-        vim.notify("Window " .. winid .. " is not a floating window", vim.log.levels.ERROR)
+        vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.ERROR)
         return false
     end
     state.save_config(winid)
@@ -39,7 +39,9 @@ function M.resize_floating_window(winid, x_delta, y_delta)
     vim.api.nvim_win_set_config(winid, config)
 end
 
-function M.find_next_floating_window(dir)
+function M.find_next_floating_window(dir, count)
+    local count1 = count or 1
+
     local cur_winid = vim.api.nvim_get_current_win()
     local wins = vim.api.nvim_tabpage_list_wins(0)
 
@@ -57,18 +59,24 @@ function M.find_next_floating_window(dir)
         return ((index - 1) % n) + 1
     end
 
-    local n = #wins
-    for i = 1, n do
+    local counter = 0
+    local i = 1
+    while counter < count1 do
         local idx = dir == 'forward' and (cur_idx + i) or (cur_idx - i)
-        local idx = wrap_index(idx, n)
+        local idx = wrap_index(idx, #wins)
         local winid = wins[idx]
         local config = vim.api.nvim_win_get_config(winid)
         if config.relative ~= "" then
-            return winid
+            counter = counter + 1
+            if counter == count1 then
+                return winid
+            end
         end
+        if counter == 0 and i >= #wins then
+            return nil -- no floating windows found
+        end
+        i = i + 1
     end
-
-    return nil
 end
 
 -- checks the current window first, then other windows in descending order by winid
@@ -84,7 +92,6 @@ end
 
 function M.focus_window(winid)
     vim.api.nvim_set_current_win(winid)
-    vim.notify("Winbender Active: winid " .. tostring(winid), vim.log.levels.INFO)
 end
 
 local function get_floating_window_size(config)

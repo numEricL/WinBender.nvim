@@ -7,10 +7,7 @@ local config = require("winbender.config")
 local keymaps = {}
 
 local function focus_next(args, count)
-    local winid = nil
-    for _ = 1, math.max(1, count) do
-        winid = core.find_next_floating_window(args.dir)
-    end
+    local winid = core.find_next_floating_window(args.dir, math.max(1, count))
     if not winid then
         return
     end

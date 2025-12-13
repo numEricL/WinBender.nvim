@@ -53,6 +53,7 @@ local function enable()
     local winid_on_enable = vim.api.nvim_get_current_win()
     local winid = core.find_floating_window('forward')
     if winid then
+        state.clear_win_configs()
         state.index_floating_windows()
         state.update_titles_with_quick_access()
         core.focus_window(winid)
@@ -69,7 +70,6 @@ local function disable()
     local core = require("winbender.core")
     local keymaps = require("winbender.keymaps")
 
-    vim.notify("", vim.log.levels.INFO)
     vim.api.nvim_set_current_win(state.winid_on_enable)
     state.restore_titles()
     state.winid_on_enable = nil
