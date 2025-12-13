@@ -3,48 +3,6 @@ if vim.g.loaded_winbender then
 end
 vim.g.loaded_winbender = true
 
-function create_floaters()
-    local old_winid = vim.api.nvim_get_current_win()
-    local buf = vim.api.nvim_create_buf(false, true)
-    local opts = {
-        title = "title",
-        relative = 'editor',
-        width = 40,
-        height = 10,
-        row = 5,
-        col = 10,
-        style = 'minimal',
-        border = 'single',
-        anchor = 'NW',
-    }
-    local win = vim.api.nvim_open_win(buf, true, opts)
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Window ID: " .. win })
-    vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Relative: " .. opts.relative })
-    vim.api.nvim_set_current_win(old_winid)
-
-
-
-    local buf = vim.api.nvim_create_buf(false, true)
-    opts.title = {{"title1"}, {"title2"}}
-    opts.relative = 'cursor'
-    opts.border = 'bold'
-    opts.col = 30
-    local win = vim.api.nvim_open_win(buf, true, opts)
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Window ID: " .. win })
-    vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Relative: " .. opts.relative })
-    vim.api.nvim_set_current_win(old_winid)
-
-
-    local buf = vim.api.nvim_create_buf(false, true)
-    opts.relative = 'cursor'
-    opts.border = 'double'
-    opts.col = 90
-    local win = vim.api.nvim_open_win(buf, true, opts)
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Window ID: " .. win })
-    vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "Relative: " .. opts.relative })
-    vim.api.nvim_set_current_win(old_winid)
-end
-
 local function enable()
     local state = require("winbender.state")
     local core = require("winbender.core")

@@ -28,17 +28,17 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 Press `<leader>f` to toggle WinBender mode. While active, floating windows are
 numbered for quick access, and the following keymaps become available:
 
-| Key | Action |
-|-----|--------|
-| `f` / `F` | Focus next/previous floating window |
-| `h/j/k/l` | Move window |
-| `H/J/K/L` | Expand window in direction |
-| `<C-h/j/k/l>` | Shrink window in direction |
-| `>` / `<` | Increase/decrease width |
-| `+` / `-` | Increase/decrease height |
-| `q/w/a/s` | Set anchor to NW/NE/SW/SE |
-| `r` | Reset window to original configuration |
-| `g1`-`g9` | Jump to numbered floating window |
+| Key           | Action                                 |
+|---------------|----------------------------------------|
+| `f` / `F`     | Focus next/previous floating window    |
+| `h/j/k/l`     | Move window                            |
+| `H/J/K/L`     | Expand window in direction             |
+| `<C-h/j/k/l>` | Shrink window in direction             |
+| `>` / `<`     | Increase/decrease width                |
+| `+` / `-`     | Increase/decrease height               |
+| `q/w/a/s`     | Set anchor to NW/NE/SW/SE              |
+| `r`           | Reset window to original configuration |
+| `g1`-`g9`     | Jump to numbered floating window       |
 
 All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
 
