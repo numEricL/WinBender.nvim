@@ -35,6 +35,9 @@ When WinBender mode is active:
 ==============================================================================
 3. USAGE                                                     *winbender-usage*
 
+Note: The toggle keymap is only available if you call |winbender.setup()|.
+Without calling setup, only the |:WinBenderToggle| command will be available.
+
 To activate WinBender mode, use the toggle key (default: `<leader>f`) or the
 |:WinBenderToggle| command. WinBender will search for floating windows in the
 current tab and, if found, will enter manipulation mode.
@@ -130,7 +133,7 @@ g1 - g9         Jump directly to floating window 1-9
                                                             *winbender-config*
                                                            *winbender.setup()*
 
-Configure WinBender by calling the setup function:
+Configure WinBender by calling the setup function.
 >lua
     require('winbender').setup({
       toggle_key = '<leader>f',
@@ -175,11 +178,12 @@ Configuration Options~
                                                      *winbender-config-options*
 
 toggle_key                                        *winbender-config-toggle_key*
-    Type: `string` or `false`
+    Type: `string` or `nil`
     Default: `'<leader>f'`
     
-    The keymap to toggle WinBender mode. Set to `false` to disable the
-    automatic keymap (you can still use |:WinBenderToggle|).
+    The keymap to toggle WinBender mode. Set to `nil` to disable the
+    keymap (you can still use |:WinBenderToggle|). This keymap is only
+    registered when |winbender.setup()| is called.
 
 keymaps                                              *winbender-config-keymaps*
     Type: `table`
