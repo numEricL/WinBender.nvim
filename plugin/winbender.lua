@@ -61,7 +61,7 @@ local function enable()
         keymaps.save()
         keymaps.set_winbender_maps()
     else
-        vim.notify("Winbender: No floating windows found", vim.log.levels.INFO)
+        vim.notify("WinBender: No floating windows found", vim.log.levels.INFO)
     end
 end
 
@@ -85,8 +85,12 @@ local function toggle()
     end
 end
 
-vim.api.nvim_create_user_command('WinbenderToggle', function()
+vim.api.nvim_create_user_command('WinBenderToggle', function()
     toggle()
-end, { desc = 'Toggle Winbender mode' })
+end, { desc = 'WinBender: Toggle activation' })
 
-vim.keymap.set('n', '<leader>f', toggle, { desc = "Winbender: Toggle activation" })
+local config = require("winbender.config")
+local opts = config.get_options()
+if opts.toggle_key then
+    vim.keymap.set('n', opts.toggle_key, toggle, { desc = "WinBender: Toggle activation" })
+end

@@ -4,6 +4,7 @@ local options = {init = false}
 
 local defaults = {
     init = true,
+    toggle_key = '<leader>f',
     keymaps = {
         focus_next = 'f',
         focus_prev = 'F',
