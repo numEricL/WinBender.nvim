@@ -5,10 +5,10 @@ A Neovim plugin for manipulating floating windows
 ## Features
 
 - Move, resize, and reposition floating windows in a keybinding layer
-- Cycle through floating windows with quick navigation
+- Cycle through floating windows
 - Quick access to numbered floating windows (`g1`-`g9`)
-- Reset windows to their original configuration
-- Change window anchor points dynamically
+- Anchor points are adjusted quietly and automatically
+- Manually specify anchor point if desired
 
 ## Installation
 
@@ -16,10 +16,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 {
-  'numEricL/winbender.nvim',
-  config = function()
-    require('winbender').setup()
-  end
+  'numEricL/winbender.nvim'
 }
 ```
 
@@ -28,17 +25,17 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 Press `<leader>f` to toggle WinBender mode. While active, floating windows are
 numbered for quick access, and the following keymaps become available:
 
-| Key           | Action                                 |
-|---------------|----------------------------------------|
-| `f` / `F`     | Focus next/previous floating window    |
-| `h/j/k/l`     | Move window                            |
-| `H/J/K/L`     | Expand window in direction             |
-| `<C-h/j/k/l>` | Shrink window in direction             |
-| `>` / `<`     | Increase/decrease width                |
-| `+` / `-`     | Increase/decrease height               |
-| `q/w/a/s`     | Set anchor to NW/NE/SW/SE              |
-| `r`           | Reset window to original configuration |
-| `g1`-`g9`     | Jump to numbered floating window       |
+| Key           | Action                                      |
+|---------------|---------------------------------------------|
+| `f` / `F`     | Focus next/previous floating window         |
+| `g1`-`g9`     | Jump to numbered floating window            |
+| `h/j/k/l`     | Reposition window                           |
+| `H/J/K/L`     | Expand window in specified direction        |
+| `<C-h/j/k/l>` | Shrink window in specified direction        |
+| `>` / `<`     | Increase/decrease width relative to anchor  |
+| `+` / `-`     | Increase/decrease height relative to anchor |
+| `q/w/a/s`     | Set anchor to NW/NE/SW/SE                   |
+| `r`           | Reset window to original configuration      |
 
 All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
 
@@ -59,6 +56,6 @@ require('winbender').setup({
 
 ## Integration
 
-If [cyclops.vim](https://github.com/numeric-larson/cyclops.vim) is installed,
-WinBender will use it to enable repeatable operations with persistent counts for
-paired keymaps via the `;` and `,` keys.
+If [cyclops.vim](https://github.com/numEricL/cyclops.vim) is installed,
+WinBender will automatically enable repeatable operations with persistent counts
+for paired keymaps via the `;` and `,` keys.
