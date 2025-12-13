@@ -71,7 +71,7 @@ local function resize_dir(args, count)
 end
 
 local function get_maps()
-    local opts = config.get_options()
+    local opts = config.options
     local keys = opts.keymaps
     local p_sz = opts.step_size.position
     local s_sz = opts.step_size.size
@@ -125,8 +125,8 @@ function M.set_winbender_maps()
     for n = 1, 9 do
         vim.keymap.set('n', 'g' .. n, function() quick_access(n) end, { desc = 'Winbender: quick access' })
     end
-    local keys = config.get_options().keymaps
-    local cyclops_opts = config.get_options().cyclops_opts
+    local keys = config.options.keymaps
+    local cyclops_opts = config.options.cyclops_opts
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.focus_next, keys.focus_prev          }, cyclops_opts })
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.shift_right, keys.shift_left         }, cyclops_opts })
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.shift_up, keys.shift_down            }, cyclops_opts })

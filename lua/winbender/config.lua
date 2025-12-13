@@ -1,9 +1,6 @@
 local M = {}
 
-local options = {init = false}
-
 local defaults = {
-    init = true,
     toggle_key = '<leader>f',
     keymaps = {
         focus_next   = 'f',
@@ -48,15 +45,10 @@ local defaults = {
     },
 }
 
-function M.setup(opts)
-    options = vim.tbl_deep_extend("force", defaults, opts or {})
-end
+M.options = defaults
 
-function M.get_options()
-    if not options.init then
-        M.setup()
-    end
-    return options
+function M.setup(opts)
+    M.options = vim.tbl_deep_extend("force", defaults, opts or {})
 end
 
 return M
