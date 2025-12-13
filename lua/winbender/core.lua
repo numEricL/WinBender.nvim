@@ -4,12 +4,12 @@ local state  = require("winbender.state")
 
 function M.validate_floating_window(winid)
     if not vim.api.nvim_win_is_valid(winid) then
-        vim.notify("WinBender: Invalid window id: " .. tostring(winid), vim.log.levels.ERROR)
+        vim.notify("WinBender: Window " .. winid .. " is not valid", vim.log.levels.WARN)
         return false
     end
-    local config = vim.api.nvim_win_get_config(winid)
-    if not config.relative or config.relative == "" then
-        vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.ERROR)
+    local win_config = vim.api.nvim_win_get_config(winid)
+    if not win_config.relative or win_config.relative == "" then
+        vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.WARN)
         return false
     end
     state.save_config(winid)
@@ -26,17 +26,17 @@ function M.get_current_floating_window()
 end
 
 function M.reposition_floating_window(winid, x_delta, y_delta)
-    local config = vim.api.nvim_win_get_config(winid)
-    config.col = config.col + x_delta
-    config.row = config.row + y_delta
-    vim.api.nvim_win_set_config(winid, config)
+    local win_config = vim.api.nvim_win_get_config(winid)
+    win_config.col = win_config.col + x_delta
+    win_config.row = win_config.row + y_delta
+    vim.api.nvim_win_set_config(winid, win_config)
 end
 
 function M.resize_floating_window(winid, x_delta, y_delta)
-    local config = vim.api.nvim_win_get_config(winid)
-    config.height = math.max(config.height + y_delta, 1)
-    config.width = math.max(config.width + x_delta, 1)
-    vim.api.nvim_win_set_config(winid, config)
+    local win_config = vim.api.nvim_win_get_config(winid)
+    win_config.height = math.max(win_config.height + y_delta, 1)
+    win_config.width = math.max(win_config.width + x_delta, 1)
+    vim.api.nvim_win_set_config(winid, win_config)
 end
 
 function M.find_next_floating_window(dir, count)
@@ -65,8 +65,8 @@ function M.find_next_floating_window(dir, count)
         local idx = dir == 'forward' and (cur_idx + i) or (cur_idx - i)
         idx = wrap_index(idx, #wins)
         local winid = wins[idx]
-        local config = vim.api.nvim_win_get_config(winid)
-        if config.relative ~= "" then
+        local win_config = vim.api.nvim_win_get_config(winid)
+        if win_config.relative ~= "" then
             counter = counter + 1
             if counter == count1 then
                 return winid
@@ -82,8 +82,8 @@ end
 -- checks the current window first, then other windows in descending order by winid
 function M.find_floating_window(dir)
     local cur_win = vim.api.nvim_get_current_win()
-    local config = vim.api.nvim_win_get_config(cur_win)
-    if config.relative ~= "" then
+    local win_config = vim.api.nvim_win_get_config(cur_win)
+    if win_config.relative ~= "" then
         return cur_win
     else
         return M.find_next_floating_window(dir)
@@ -91,13 +91,17 @@ function M.find_floating_window(dir)
 end
 
 function M.focus_window(winid)
-    vim.api.nvim_set_current_win(winid)
+    if winid and vim.api.nvim_win_is_valid(winid) then
+        vim.api.nvim_set_current_win(winid)
+    else
+        vim.notify("WinBender: Cannot focus invalid window " .. tostring(winid), vim.log.levels.WARN)
+    end
 end
 
-local function get_floating_window_size(config)
-    local width = config.width
-    local height = config.height
-    local border = config.border
+local function get_floating_window_size(win_config)
+    local width = win_config.width
+    local height = win_config.height
+    local border = win_config.border
     local border_width = 0
     local border_height = 0
 
@@ -117,25 +121,25 @@ local function get_floating_window_size(config)
 end
 
 function M.update_anchor(winid, anchor)
-    local config = vim.api.nvim_win_get_config(winid)
-    local width, height = get_floating_window_size(config)
+    local win_config = vim.api.nvim_win_get_config(winid)
+    local width, height = get_floating_window_size(win_config)
 
-    local old_anchor = config.anchor
+    local old_anchor = win_config.anchor
     local x_old = (old_anchor:sub(2,2) == 'E' and 1) or 0
     local y_old = (old_anchor:sub(1,1) == 'S' and 1) or 0
 
     local x_new = (anchor:sub(2,2) == 'E' and 1) or 0
     local y_new = (anchor:sub(1,1) == 'S' and 1) or 0
 
-    config.anchor = anchor
-    config.col = config.col + (x_new - x_old) * width
-    config.row = config.row + (y_new - y_old) * height
-    vim.api.nvim_win_set_config(winid, config)
+    win_config.anchor = anchor
+    win_config.col = win_config.col + (x_new - x_old) * width
+    win_config.row = win_config.row + (y_new - y_old) * height
+    vim.api.nvim_win_set_config(winid, win_config)
 end
 
 function M.get_anchor(winid)
-   local config = vim.api.nvim_win_get_config(winid)
-   return config.anchor
+    local win_config = vim.api.nvim_win_get_config(winid)
+    return win_config.anchor
 end
 
 return M

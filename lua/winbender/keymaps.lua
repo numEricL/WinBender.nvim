@@ -2,7 +2,7 @@ local M = {}
 
 local core = require("winbender.core")
 local state = require("winbender.state")
-local config = require("winbender.config")
+local options = require("winbender.config").options
 
 local keymaps = {}
 
@@ -72,10 +72,9 @@ local function resize_dir(args, count)
 end
 
 local function get_maps()
-    local opts = config.options
-    local keys = opts.keymaps
-    local p_sz = opts.step_size.position
-    local s_sz = opts.step_size.size
+    local keys = options.keymaps
+    local p_sz = options.step_size.position
+    local s_sz = options.step_size.size
     local maps = {
         focus_next   = { map = keys.focus_next,   func = focus_next,   args = {dir = 'forward'} },
         focus_prev   = { map = keys.focus_prev,   func = focus_next,   args = {dir = 'backward'} },
@@ -121,13 +120,13 @@ function M.set_winbender_maps()
     for action, mapping in pairs(get_maps()) do
         vim.keymap.set('n', mapping.map, function()
             mapping.func(mapping.args, vim.v.count)
-        end, { desc = "Winbender: " .. action })
+        end, { desc = "WinBender: " .. action })
     end
     for n = 1, 9 do
-        vim.keymap.set('n', 'g' .. n, function() quick_access(n) end, { desc = 'Winbender: quick access' })
+        vim.keymap.set('n', 'g' .. n, function() quick_access(n) end, { desc = 'WinBender: quick access' })
     end
-    local keys = config.options.keymaps
-    local cyclops_opts = config.options.cyclops_opts
+    local keys = options.keymaps
+    local cyclops_opts = options.cyclops_opts
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.focus_next, keys.focus_prev          }, cyclops_opts })
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.shift_right, keys.shift_left         }, cyclops_opts })
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.shift_up, keys.shift_down            }, cyclops_opts })
@@ -150,7 +149,7 @@ end
 
 function M.restore()
     for _, mapping in pairs(get_maps()) do
-        vim.api.nvim_del_keymap('n', mapping.map)
+        pcall(vim.api.nvim_del_keymap, 'n', mapping.map)
     end
     while #keymaps > 0 do
         local maparg = table.remove(keymaps)

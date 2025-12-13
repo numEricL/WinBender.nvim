@@ -1,6 +1,6 @@
 local M = {}
 
-local config = require("winbender.config")
+local options = require("winbender.config").options
 
 M.winid_on_enable = nil
 local quick_access_index = {}
@@ -28,9 +28,9 @@ function M.index_floating_windows()
     local i = 1
     local wins = vim.api.nvim_tabpage_list_wins(0)
     for _, winid in ipairs(wins) do
-        local config = vim.api.nvim_win_get_config(winid)
-        if config.relative ~= "" then
-            quick_access_index[i] = {winid = winid, title = config.title}
+        local win_config = vim.api.nvim_win_get_config(winid)
+        if win_config.relative ~= "" then
+            quick_access_index[i] = {winid = winid, title = win_config.title}
             i = i + 1
         end
     end
@@ -51,29 +51,34 @@ function M.update_titles_with_quick_access()
         if type(win.title) == "table" then
             new_title = copy_table(win.title)
             table.insert(new_title, 1, {' '})
-            table.insert(new_title, 1, {label, config.options.quick_access_hl})
+            table.insert(new_title, 1, {label,options.quick_access_hl})
         elseif type(win.title) == "string" then
-            new_title = { {label, config.options.quick_access_hl}, {' ' .. win.title} }
+            new_title = { {label, options.quick_access_hl}, {' ' .. win.title} }
+        else
+            new_title = { {label, options.quick_access_hl} }
         end
 
-        local config = vim.api.nvim_win_get_config(win.winid)
-        config.title = new_title
-        vim.api.nvim_win_set_config(win.winid, config)
+        local win_config = vim.api.nvim_win_get_config(win.winid)
+        win_config.title = new_title
+        vim.api.nvim_win_set_config(win.winid, win_config)
     end
 end
 
 function M.restore_titles()
     for _, win in ipairs(quick_access_index) do
         if vim.api.nvim_win_is_valid(win.winid) then
-            local config = vim.api.nvim_win_get_config(win.winid)
-            config.title = win.title
-            vim.api.nvim_win_set_config(win.winid, config)
+            local win_config = vim.api.nvim_win_get_config(win.winid)
+            win_config.title = win.title or ""
+            vim.api.nvim_win_set_config(win.winid, win_config)
         end
     end
 end
 
 function M.quick_access_winid(id)
-    return quick_access_index[id].winid
+    if quick_access_index[id] ~= nil then
+        return quick_access_index[id].winid
+    end
+    return nil 
 end
 
 return M

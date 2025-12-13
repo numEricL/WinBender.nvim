@@ -22,7 +22,7 @@ local function enable()
 end
 
 local function disable()
-    vim.api.nvim_set_current_win(state.winid_on_enable)
+    core.focus_window(state.winid_on_enable)
     state.restore_titles()
     state.winid_on_enable = nil
     keymaps.restore()

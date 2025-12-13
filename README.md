@@ -76,7 +76,7 @@ All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
 
 ```lua
 require('winbender').setup({
-  toggle_key = '<leader>f',  -- Key to toggle Winbender mode (set to nil to disable)
+  toggle_key = '<leader>f',  -- Key to toggle WinBender mode (set to nil to disable)
   keymaps = {
     -- Override default keymaps
   },
