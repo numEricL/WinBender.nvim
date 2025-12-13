@@ -42,7 +42,6 @@ end
 function M.find_next_floating_window(dir)
     local cur_winid = vim.api.nvim_get_current_win()
     local wins = vim.api.nvim_tabpage_list_wins(0)
-    table.sort(wins)
 
     -- Find the index of the current window
     local cur_idx

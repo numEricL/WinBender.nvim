@@ -7,13 +7,15 @@ function create_floaters()
     local old_winid = vim.api.nvim_get_current_win()
     local buf = vim.api.nvim_create_buf(false, true)
     local opts = {
-        relative = 'cursor',
+        title = "title",
+        relative = 'editor',
         width = 40,
         height = 10,
         row = 5,
         col = 10,
         style = 'minimal',
         border = 'single',
+        anchor = 'NW',
     }
     local win = vim.api.nvim_open_win(buf, true, opts)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "Window ID: " .. win })
@@ -23,6 +25,7 @@ function create_floaters()
 
 
     local buf = vim.api.nvim_create_buf(false, true)
+    opts.title = {{"title1"}, {"title2"}}
     opts.relative = 'cursor'
     opts.border = 'bold'
     opts.col = 30
@@ -48,8 +51,10 @@ local function enable()
     local keymaps = require("winbender.keymaps")
 
     local winid_on_enable = vim.api.nvim_get_current_win()
-    local winid = core.find_floating_window('backward')
+    local winid = core.find_floating_window('forward')
     if winid then
+        state.index_floating_windows()
+        state.update_titles_with_quick_access()
         core.focus_window(winid)
         state.winid_on_enable = winid_on_enable
         keymaps.save()
@@ -66,6 +71,7 @@ local function disable()
 
     vim.notify("", vim.log.levels.INFO)
     vim.api.nvim_set_current_win(state.winid_on_enable)
+    state.restore_titles()
     state.winid_on_enable = nil
     keymaps.restore()
 end

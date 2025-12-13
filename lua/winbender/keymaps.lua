@@ -105,11 +105,22 @@ local function get_maps()
     return maps
 end
 
+local function quick_access(id)
+    local winid = state.quick_access_winid(id)
+    if not winid then
+        return
+    end
+    core.focus_window(winid)
+end
+
 function M.set_winbender_maps()
     for action, mapping in pairs(get_maps()) do
         vim.keymap.set('n', mapping.map, function()
             mapping.func(mapping.args)
         end, { desc = "Winbender: " .. action })
+    end
+    for n = 1, 9 do
+        vim.keymap.set('n', 'g' .. n, function() quick_access(n) end, { desc = 'Winbender: quick access' })
     end
 end
 
