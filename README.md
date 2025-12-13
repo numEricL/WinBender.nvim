@@ -68,7 +68,7 @@ keymaps become available:
 | `>` / `<`     | Increase/decrease width relative to anchor  |
 | `+` / `-`     | Increase/decrease height relative to anchor |
 | `q/w/a/s`     | Set anchor to NW/NE/SW/SE                   |
-| `r`           | Reset window to original configuration      |
+| `u`           | Reset window to original configuration      |
 
 All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
 

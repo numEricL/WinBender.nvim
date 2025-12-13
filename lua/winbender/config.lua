@@ -5,7 +5,7 @@ local defaults = {
     keymaps = {
         focus_next   = 'f',
         focus_prev   = 'F',
-        reset_window = 'r',
+        reset_window = 'u',
 
         shift_left  = 'h',
         shift_down  = 'j',
@@ -36,6 +36,7 @@ local defaults = {
         position = 5,
         size     = 5,
     },
+    quick_access_hl = 'WarningMsg',
     cyclops_opts = {
         accepts_count      = 1,
         accepts_register   = 0,

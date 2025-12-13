@@ -1,5 +1,7 @@
 local M = {}
 
+local config = require("winbender.config")
+
 M.winid_on_enable = nil
 local quick_access_index = {}
 local win_config = {}
@@ -45,12 +47,13 @@ end
 function M.update_titles_with_quick_access()
     for i, win in ipairs(quick_access_index) do
         local new_title = nil
-        local label = "[g" .. i .. "] "
+        local label = "[g" .. i .. "]"
         if type(win.title) == "table" then
             new_title = copy_table(win.title)
-            table.insert(new_title, 1, {label})
+            table.insert(new_title, 1, {' '})
+            table.insert(new_title, 1, {label, config.options.quick_access_hl})
         elseif type(win.title) == "string" then
-            new_title = label .. win.title
+            new_title = { {label, config.options.quick_access_hl}, {' ' .. win.title} }
         end
 
         local config = vim.api.nvim_win_get_config(win.winid)

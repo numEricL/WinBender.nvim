@@ -46,6 +46,7 @@ local function update_anchor(args)
         return
     end
     core.update_anchor(winid, args.anchor)
+    print('WinBender: Anchor set to ' .. args.anchor)
 end
 
 local function resize_dir(args, count)

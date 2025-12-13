@@ -121,7 +121,7 @@ location while changing the reference point.
 
 Reset~
                                                *winbender-keymap-reset*
-r               Reset window to its original configuration (position, size,
+u               Reset window to its original configuration (position, size,
                 and anchor as they were when WinBender mode was activated)
 
 Quick Access~
@@ -140,7 +140,7 @@ Configure WinBender by calling the setup function.
       keymaps = {
         focus_next = 'f',
         focus_prev = 'F',
-        reset_window = 'r',
+        reset_window = 'u',
         
         shift_left = 'h',
         shift_down = 'j',
@@ -170,7 +170,8 @@ Configure WinBender by calling the setup function.
       step_size = {
         position = 5,
         size = 5,
-      }
+      },
+      quick_access_hl = 'WarningMsg',
     })
 <
 
@@ -205,6 +206,15 @@ step_size                                          *winbender-config-step_size*
         The number of units to resize a window with each resize command
         (H, J, K, L, <C-h>, <C-j>, <C-k>, <C-l>, >, <, +, -). Can be
         overridden with a count prefix.
+
+quick_access_hl                              *winbender-config-quick_access_hl*
+    Type: `string`
+    Default: `'WarningMsg'`
+    
+    The highlight group used for quick access labels ([g1], [g2], etc.)
+    shown in window titles when WinBender mode is active. You can use any
+    valid highlight group name (e.g., 'WarningMsg', 'ErrorMsg', 'Title',
+    'Special') to customize the appearance of the quick access indicators.
 
 ==============================================================================
 7. INTEGRATION                                         *winbender-integration*
