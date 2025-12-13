@@ -34,7 +34,7 @@ function M.index_floating_windows()
     end
 end
 
-function copy_table(t)
+local function copy_table(t)
     local t2 = {}
     for k, v in pairs(t) do
         t2[k] = v

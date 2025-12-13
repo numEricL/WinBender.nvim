@@ -1,8 +1,3 @@
-if vim.g.loaded_winbender then
-    return
-end
-vim.g.loaded_winbender = true
-
 local function enable()
     local state = require("winbender.state")
     local core = require("winbender.core")

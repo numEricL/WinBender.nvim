@@ -63,7 +63,7 @@ function M.find_next_floating_window(dir, count)
     local i = 1
     while counter < count1 do
         local idx = dir == 'forward' and (cur_idx + i) or (cur_idx - i)
-        local idx = wrap_index(idx, #wins)
+        idx = wrap_index(idx, #wins)
         local winid = wins[idx]
         local config = vim.api.nvim_win_get_config(winid)
         if config.relative ~= "" then
