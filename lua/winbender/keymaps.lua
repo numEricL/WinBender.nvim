@@ -125,6 +125,16 @@ function M.set_winbender_maps()
     for n = 1, 9 do
         vim.keymap.set('n', 'g' .. n, function() quick_access(n) end, { desc = 'Winbender: quick access' })
     end
+    local keys = config.get_options().keymaps
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.focus_next, keys.focus_prev }, { persistent_count = 1 } })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.shift_left, keys.shift_right }, { persistent_count = 1 } })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.shift_up, keys.shift_down }, { persistent_count = 1 } })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_left, keys.decrease_left }, { persistent_count = 1 } })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_right, keys.decrease_right }, { persistent_count = 1 } })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_up, keys.decrease_up }, { persistent_count = 1 } })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_down, keys.decrease_down }, { persistent_count = 1 } })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_width, keys.decrease_width }, { persistent_count = 1 } })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_height, keys.decrease_height }, { persistent_count = 1 } })
 end
 
 function M.save()
