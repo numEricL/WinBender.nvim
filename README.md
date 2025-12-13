@@ -16,7 +16,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 {
-  'numericl/winbender.nvim',
+  'numEricL/winbender.nvim',
   config = function()
     require('winbender').setup()
   end

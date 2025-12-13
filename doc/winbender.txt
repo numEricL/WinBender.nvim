@@ -1,0 +1,226 @@
+*winbender.txt*  Manipulate floating windows with keybindings
+
+Author:  Eric Larson
+License: Mozilla Public License Version 2.0
+
+==============================================================================
+CONTENTS                                                  *winbender-contents*
+
+    1. Introduction ............................ |winbender-introduction|
+    2. Requirements ............................ |winbender-requirements|
+    3. Usage ................................... |winbender-usage|
+    4. Commands ................................ |winbender-commands|
+    5. Keymaps ................................. |winbender-keymaps|
+    6. Configuration ........................... |winbender-configuration|
+    7. Integration ............................. |winbender-integration|
+
+==============================================================================
+1. INTRODUCTION                                       *winbender-introduction*
+
+WinBender is a Neovim plugin for manipulating floating windows. It provides
+a modal interface for moving, resizing, and repositioning floating windows
+using intuitive keybindings.
+
+When WinBender mode is active:
+  - Floating windows are numbered for quick access (g1-g9)
+  - Window titles are temporarily modified to show quick access labels
+  - A set of keybindings becomes available for window manipulation
+  - The original window configuration is saved for reset capability
+
+==============================================================================
+2. REQUIREMENTS                                       *winbender-requirements*
+
+  - Neovim 0.8.0 or later
+
+==============================================================================
+3. USAGE                                                     *winbender-usage*
+
+To activate WinBender mode, use the toggle key (default: `<leader>f`) or the
+|:WinBenderToggle| command. WinBender will search for floating windows in the
+current tab and, if found, will enter manipulation mode.
+
+While active:
+  1. Floating windows are numbered with [g1], [g2], etc. in their titles
+  2. Focus is set to the first floating window
+  3. WinBender keymaps become active
+  4. Original keymaps are saved and restored on exit
+
+To deactivate WinBender mode, press the toggle key again or use
+|:WinBenderToggle|. This will restore the original window focus, remove the
+quick access labels, and restore previous keymaps.
+
+All movement and resize operations support count prefixes. For example:
+  `5j`  - Move window down 25 units (5 × default step_size.position)
+  `3H`  - Expand window left by 15 units (3 × default step_size.size)
+
+==============================================================================
+4. COMMANDS                                               *winbender-commands*
+
+:WinBenderToggle                                          *:WinBenderToggle*
+    Toggle WinBender mode on or off. When enabled, floating windows are
+    indexed and manipulation keymaps are activated. When disabled, returns
+    to the original window and restores previous state.
+
+==============================================================================
+5. KEYMAPS                                                 *winbender-keymaps*
+
+Default Toggle Key~
+                                                    *winbender-toggle-default*
+<leader>f       Toggle WinBender mode (configurable via |winbender-config|)
+
+WinBender Mode Keymaps~
+
+These keymaps are active only while WinBender mode is enabled:
+
+Navigation~
+                                               *winbender-keymap-focus-next*
+f               Focus next floating window (cycles forward)
+                                               *winbender-keymap-focus-prev*
+F               Focus previous floating window (cycles backward)
+
+Position~
+                                               *winbender-keymap-shift*
+h               Move window left
+j               Move window down
+k               Move window up
+l               Move window right
+
+Resize (Directional)~
+                                               *winbender-keymap-increase*
+H               Expand window to the left
+J               Expand window downward
+K               Expand window upward
+L               Expand window to the right
+
+                                               *winbender-keymap-decrease*
+<C-h>           Shrink window from the right
+<C-j>           Shrink window from the bottom
+<C-k>           Shrink window from the top
+<C-l>           Shrink window from the left
+
+Resize (Symmetrical)~
+                                               *winbender-keymap-size*
+>               Increase width (expands both left and right)
+<               Decrease width (shrinks both left and right)
++               Increase height (expands both top and bottom)
+-               Decrease height (shrinks both top and bottom)
+
+Anchor Points~
+                                               *winbender-keymap-anchor*
+q               Set anchor to NorthWest (top-left)
+w               Set anchor to NorthEast (top-right)
+a               Set anchor to SouthWest (bottom-left)
+s               Set anchor to SouthEast (bottom-right)
+
+Note: Changing the anchor affects how the window is positioned relative to
+its row/col coordinates. The window will reposition to maintain its visual
+location while changing the reference point.
+
+Reset~
+                                               *winbender-keymap-reset*
+r               Reset window to its original configuration (position, size,
+                and anchor as they were when WinBender mode was activated)
+
+Quick Access~
+                                               *winbender-keymap-quick-access*
+g1 - g9         Jump directly to floating window 1-9
+
+==============================================================================
+6. CONFIGURATION                                     *winbender-configuration*
+                                                            *winbender-config*
+                                                           *winbender.setup()*
+
+Configure WinBender by calling the setup function:
+>lua
+    require('winbender').setup({
+      toggle_key = '<leader>f',
+      keymaps = {
+        focus_next = 'f',
+        focus_prev = 'F',
+        reset_window = 'r',
+        
+        shift_left = 'h',
+        shift_down = 'j',
+        shift_up = 'k',
+        shift_right = 'l',
+        
+        increase_left = 'H',
+        increase_down = 'J',
+        increase_up = 'K',
+        increase_right = 'L',
+        
+        decrease_left = '<c-l>',
+        decrease_down = '<c-k>',
+        decrease_up = '<c-j>',
+        decrease_right = '<c-h>',
+        
+        increase_width = '>',
+        decrease_width = '<',
+        increase_height = '+',
+        decrease_height = '-',
+        
+        anchor_NW = 'q',
+        anchor_NE = 'w',
+        anchor_SW = 'a',
+        anchor_SE = 's',
+      },
+      step_size = {
+        position = 5,
+        size = 5,
+      }
+    })
+<
+
+Configuration Options~
+                                                     *winbender-config-options*
+
+toggle_key                                        *winbender-config-toggle_key*
+    Type: `string` or `false`
+    Default: `'<leader>f'`
+    
+    The keymap to toggle WinBender mode. Set to `false` to disable the
+    automatic keymap (you can still use |:WinBenderToggle|).
+
+keymaps                                              *winbender-config-keymaps*
+    Type: `table`
+    Default: See above
+    
+    A table of keymap definitions for WinBender mode operations. Each key
+    corresponds to an action (e.g., focus_next, shift_left) and its value
+    is the key sequence to trigger that action.
+
+step_size                                          *winbender-config-step_size*
+    Type: `table`
+    Default: `{ position = 5, size = 5 }`
+    
+    step_size.position                    *winbender-config-step_size.position*
+        The number of units to move a window with each position command
+        (h, j, k, l). Can be overridden with a count prefix.
+    
+    step_size.size                            *winbender-config-step_size.size*
+        The number of units to resize a window with each resize command
+        (H, J, K, L, <C-h>, <C-j>, <C-k>, <C-l>, >, <, +, -). Can be
+        overridden with a count prefix.
+
+==============================================================================
+7. INTEGRATION                                         *winbender-integration*
+
+cyclops.vim
+                                                     *winbender-cyclops-integration*
+
+If cyclops.vim (https://github.com/numEricL/cyclops.vim) is installed,
+WinBender will automatically integrate with it to enable repeatable
+operations with persistent counts for paired keymaps.
+
+This allows you to:
+  - Use `;` to repeat the operation with the same count
+  - Use `,` to repeat the opposite operation with the same count
+
+For example, after pressing `5j` to move down, you can press `;` to move
+down by 5 again, or `,` to move up by 5.
+
+The integration is automatic and requires no configuration. If cyclops.vim
+is not installed, WinBender will function normally without this feature.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
