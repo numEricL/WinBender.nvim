@@ -5,6 +5,7 @@ A Neovim plugin for manipulating floating windows
 ## Features
 
 - Move, resize, and reposition floating windows in a keybinding layer
+- Drag and drop floating windows with the mouse
 - Cycle through floating windows
 - Quick access to numbered floating windows (`g1`-`g9`)
 - Anchor points are adjusted quietly and automatically
@@ -72,6 +73,10 @@ keymaps become available:
 
 All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
 
+### Mouse Support
+
+Floating windows may be dragged while WinBender is active.
+
 ## Configuration
 
 ```lua
@@ -80,6 +85,7 @@ require('winbender').setup({
   keymaps = {
     -- Override default keymaps
   },
+  mouse_enabled = true,      -- Enable mouse drag and drop (default: true)
   step_size = {
     position = 5,  -- Step size for position changes
     size = 5,      -- Step size for resize operations

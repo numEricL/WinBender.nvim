@@ -116,7 +116,7 @@ local function quick_access(id)
     core.focus_window(winid)
 end
 
-function M.set_winbender_maps()
+function M.set_maps()
     for action, mapping in pairs(get_maps()) do
         vim.keymap.set('n', mapping.map, function()
             mapping.func(mapping.args, vim.v.count)
@@ -147,7 +147,7 @@ function M.save()
     end
 end
 
-function M.restore()
+function M.restore_maps()
     for _, mapping in pairs(get_maps()) do
         pcall(vim.api.nvim_del_keymap, 'n', mapping.map)
     end

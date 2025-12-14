@@ -11,20 +11,22 @@ CONTENTS                                                  *winbender-contents*
     3. Usage ................................... |winbender-usage|
     4. Commands ................................ |winbender-commands|
     5. Keymaps ................................. |winbender-keymaps|
-    6. Configuration ........................... |winbender-configuration|
-    7. Integration ............................. |winbender-integration|
+    6. Mouse Controls .......................... |winbender-mouse|
+    7. Configuration ........................... |winbender-configuration|
+    8. Integration ............................. |winbender-integration|
 
 ==============================================================================
 1. INTRODUCTION                                       *winbender-introduction*
 
 WinBender is a Neovim plugin for manipulating floating windows. It provides
 a modal interface for moving, resizing, and repositioning floating windows
-using intuitive keybindings.
+using intuitive keybindings and mouse controls.
 
 When WinBender mode is active:
   - Floating windows are numbered for quick access (g1-g9)
   - Window titles are temporarily modified to show quick access labels
   - A set of keybindings becomes available for window manipulation
+  - Mouse drag and drop is enabled for repositioning windows
   - The original window configuration is saved for reset capability
 
 ==============================================================================
@@ -129,7 +131,27 @@ Quick Access~
 g1 - g9         Jump directly to floating window 1-9
 
 ==============================================================================
-6. CONFIGURATION                                     *winbender-configuration*
+6. MOUSE CONTROLS                                             *winbender-mouse*
+
+When WinBender mode is active and mouse support is enabled (default), you can
+use the mouse to interact with floating windows:
+
+Mouse Actions~
+                                                    *winbender-mouse-click*
+<LeftMouse>     Click on a floating window to focus it
+
+                                                    *winbender-mouse-drag*
+<LeftDrag>      Click and drag a floating window to reposition it. The window
+                is focused immediately when you click.
+
+Note: Mouse support preserves any existing mouse mappings and restores them
+when WinBender mode is deactivated.
+
+To disable mouse support, set `mouse_enabled = false` in your configuration.
+See |winbender-config-mouse_enabled|.
+
+==============================================================================
+7. CONFIGURATION                                     *winbender-configuration*
                                                             *winbender-config*
                                                            *winbender.setup()*
 
@@ -137,6 +159,7 @@ Configure WinBender by calling the setup function.
 >lua
     require('winbender').setup({
       toggle_key = '<leader>f',
+      mouse_enabled = true,
       keymaps = {
         focus_next = 'f',
         focus_prev = 'F',
@@ -186,6 +209,17 @@ toggle_key                                        *winbender-config-toggle_key*
     keymap (you can still use |:WinBenderToggle|). This keymap is only
     registered when |winbender.setup()| is called.
 
+mouse_enabled                                    *winbender-config-mouse_enabled*
+    Type: `boolean`
+    Default: `true`
+    
+    Enable or disable mouse support for dragging and clicking floating
+    windows. When enabled, you can click to focus and drag to reposition
+    floating windows while WinBender mode is active. Existing mouse
+    mappings are preserved and restored when WinBender mode is deactivated.
+    
+    Set to `false` to disable mouse controls entirely.
+
 keymaps                                              *winbender-config-keymaps*
     Type: `table`
     Default: See above
@@ -217,7 +251,7 @@ quick_access_hl                              *winbender-config-quick_access_hl*
     'Special') to customize the appearance of the quick access indicators.
 
 ==============================================================================
-7. INTEGRATION                                         *winbender-integration*
+8. INTEGRATION                                         *winbender-integration*
 
 cyclops.vim
                                                      *winbender-cyclops-integration*
