@@ -2,14 +2,18 @@ local M = {}
 
 local state  = require("winbender.state")
 
-function M.validate_floating_window(winid)
+function M.validate_floating_window(winid, silent)
     if not vim.api.nvim_win_is_valid(winid) then
-        vim.notify("WinBender: Window " .. winid .. " is not valid", vim.log.levels.WARN)
+        if not silent then
+            vim.notify("WinBender: Window " .. winid .. " is not valid", vim.log.levels.WARN)
+        end
         return false
     end
     local win_config = vim.api.nvim_win_get_config(winid)
     if not win_config.relative or win_config.relative == "" then
-        vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.WARN)
+        if not silent then
+            vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.WARN)
+        end
         return false
     end
     state.save_config(winid)
@@ -90,10 +94,10 @@ function M.find_floating_window(dir)
     end
 end
 
-function M.focus_window(winid)
+function M.focus_window(winid, silent)
     if winid and vim.api.nvim_win_is_valid(winid) then
         vim.api.nvim_set_current_win(winid)
-    else
+    elseif not silent then
         vim.notify("WinBender: Cannot focus invalid window " .. tostring(winid), vim.log.levels.WARN)
     end
 end
