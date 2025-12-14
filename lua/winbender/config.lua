@@ -2,6 +2,8 @@ local M = {}
 
 local defaults = {
     toggle_key = '<leader>f',
+    mouse_enabled = true,
+    quick_access_hl = 'WarningMsg',
     keymaps = {
         focus_next   = 'f',
         focus_prev   = 'F',
@@ -36,7 +38,6 @@ local defaults = {
         position = 5,
         size     = 5,
     },
-    quick_access_hl = 'WarningMsg',
     cyclops_opts = {
         accepts_count      = 1,
         accepts_register   = 0,
