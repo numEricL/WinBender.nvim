@@ -45,7 +45,7 @@ local function drag_floating_window()
     end
     
     if not vim.api.nvim_win_is_valid(drag_state.winid) then
-        M.end_drag_floating_window()
+        end_drag_floating_window()
         return
     end
     
@@ -90,7 +90,7 @@ end
 
 function M.save()
     mouse_maps = {}
-    local maps_to_save = {'<LeftMouse>', '<LeftDrag>', '<LeftRelease>','<2-LeftMouse>', '<3-LeftMouse>', '<4-LeftMouse>'}
+    local maps_to_save = {'<LeftMouse>', '<LeftDrag>', '<LeftRelease>', '<2-LeftMouse>', '<3-LeftMouse>', '<4-LeftMouse>'}
 
     for _, map in ipairs(maps_to_save) do
         local rhs = vim.fn.maparg(map, 'n', 0, 1)
