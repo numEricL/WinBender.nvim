@@ -40,23 +40,26 @@ When WinBender mode is active:
 Note: The toggle keymap is only available if you call |winbender.setup()|.
 Without calling setup, only the |:WinBenderToggle| command will be available.
 
-To activate WinBender mode, use the toggle key (default: `<leader>f`) or the
-|:WinBenderToggle| command. WinBender will search for floating windows in the
-current tab and, if found, will enter manipulation mode.
+To activate WinBender mode, use the |:WinBenderToggle| command, or, if
+configured , the toggle key. WinBender will search for floating windows in the
+current tab and create a layer of keymaps for manipulating them.
 
 While active:
-  1. Floating windows are numbered with [g1], [g2], etc. in their titles
+  1. WinBender keymaps become active
   2. Focus is set to the first floating window
-  3. WinBender keymaps become active
-  4. Original keymaps are saved and restored on exit
+  3. Floating windows are numbered with [g1], [g2], etc. in their titles
+  4. Original keymaps are restored on exit
 
-To deactivate WinBender mode, press the toggle key again or use
-|:WinBenderToggle|. This will restore the original window focus, remove the
-quick access labels, and restore previous keymaps.
+Use the toggle again to deactivate WinBender. This will restore the original
+window focus, remove the quick access labels, and restore previous keymaps.
 
 All movement and resize operations support count prefixes. For example:
   `5j`  - Move window down 25 units (5 × default step_size.position)
   `3H`  - Expand window left by 15 units (3 × default step_size.size)
+
+If cyclops.vim (https://github.com/numEricL/cyclops.vim) is installed,
+additional keymaps are defined: use `;` and `,` to repeat or reverse the last
+operation. See |winbender-cyclops-integration|.
 
 ==============================================================================
 4. COMMANDS                                               *winbender-commands*
@@ -69,9 +72,10 @@ All movement and resize operations support count prefixes. For example:
 ==============================================================================
 5. KEYMAPS                                                 *winbender-keymaps*
 
-Default Toggle Key~
-                                                    *winbender-toggle-default*
-<leader>f       Toggle WinBender mode (configurable via |winbender-config|)
+Toggle Key~
+                                                   *winbender-toggle-default*
+<plug>(winbender-toggle)     Toggle WinBender mode
+                             (configurable via |winbender-config|)
 
 WinBender Mode Keymaps~
 
@@ -144,9 +148,6 @@ Mouse Actions~
 <LeftDrag>      Click and drag a floating window to reposition it. The window
                 is focused immediately when you click.
 
-Note: Mouse support preserves any existing mouse mappings and restores them
-when WinBender mode is deactivated.
-
 To disable mouse support, set `mouse_enabled = false` in your configuration.
 See |winbender-config-mouse_enabled|.
 
@@ -155,10 +156,10 @@ See |winbender-config-mouse_enabled|.
                                                             *winbender-config*
                                                            *winbender.setup()*
 
-Configure WinBender by calling the setup function.
+Configure WinBender by calling the setup function. Default configuration:
 >lua
     require('winbender').setup({
-      toggle_key = '<leader>f',
+      toggle_key = 'nil',
       mouse_enabled = true,
       keymaps = {
         focus_next = 'f',
@@ -203,11 +204,10 @@ Configuration Options~
 
 toggle_key                                        *winbender-config-toggle_key*
     Type: `string` or `nil`
-    Default: `'<leader>f'`
+    Default: `nil`
     
-    The keymap to toggle WinBender mode. Set to `nil` to disable the
-    keymap (you can still use |:WinBenderToggle|). This keymap is only
-    registered when |winbender.setup()| is called.
+    The keymap to toggle WinBender mode. Disabled by default. If not `nil`, this
+    keymap is registered when |winbender.setup()| is called.
 
 mouse_enabled                                    *winbender-config-mouse_enabled*
     Type: `boolean`
@@ -254,7 +254,7 @@ quick_access_hl                              *winbender-config-quick_access_hl*
 8. INTEGRATION                                         *winbender-integration*
 
 cyclops.vim
-                                                     *winbender-cyclops-integration*
+                                             *winbender-cyclops-integration*
 
 If cyclops.vim (https://github.com/numEricL/cyclops.vim) is installed,
 WinBender will automatically integrate with it to enable repeatable
@@ -264,10 +264,11 @@ This allows you to:
   - Use `;` to repeat the operation with the same count
   - Use `,` to repeat the opposite operation with the same count
 
-For example, after pressing `5j` to move down, you can press `;` to move
-down by 5 again, or `,` to move up by 5.
+For example, after pressing `5j` to move down, you can press `;` to move down by
+5 again, or `,` to move up by 5. The count persists with `;` and `,` until a new
+count or mapping is used.
 
-The integration is automatic and requires no configuration. If cyclops.vim
+Integration is automatic and requires no configuration. If cyclops.vim
 is not installed, WinBender will function normally without this feature.
 
 ==============================================================================

@@ -1,7 +1,7 @@
 local M = {}
 
 local defaults = {
-    toggle_key = '<leader>f',
+    toggle_key = nil,
     mouse_enabled = true,
     quick_access_hl = 'WarningMsg',
     keymaps = {

@@ -55,7 +55,7 @@ end
 function M.setup(opts)
     config.setup(opts)
     if config.options.toggle_key then
-        vim.keymap.set('n', config.options.toggle_key, M.toggle, { desc = "WinBender: Toggle activation" })
+        vim.keymap.set("n", config.options.toggle_key, "<plug>(winbender-toggle)", { desc = "WinBender: Toggle activation" })
     end
 end
 

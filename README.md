@@ -24,10 +24,6 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 }
 ```
 
-**Note:** You must call `setup()` (either via `opts` with lazy.nvim or
-explicitly) to enable the toggle keymap. Without calling `setup()`, only
-the `:WinBenderToggle` command will be available.
-
 Using [Plug](https://github.com/junegunn/vim-plug):
 
 ```vim
@@ -39,11 +35,12 @@ call plug#end()
 lua require('winbender').setup()
 ```
 
-Or with custom configuration:
+**Note:** The `opts` table is optional. If omitted, default settings will be
+used. See the documentation for full details.
 
 ```lua
 require('winbender').setup({
-  toggle_key = '<leader>w',  -- Change the toggle key
+  toggle_key = '<leader>f',  -- Define a toggle key
   step_size = {
     position = 10,
     size = 10,
@@ -53,8 +50,13 @@ require('winbender').setup({
 
 ## Usage
 
-Toggle WinBender with `:WinBenderToggle` or use the keymap (default: `<leader>f`)
-if you've called `setup()`.
+Toggle WinBender with `:WinBenderToggle` or setup a keymap. There are two
+options provided for defining a toggle keymap, either set the `toggle_key`
+option in the setup configuration or define your own keymap to the plugmap:
+
+```lua
+vim.keymap.set('n', '<leader>f', '<plug>(winbender-toggle)')
+```
 
 While active, floating windows are numbered for quick access and the following
 keymaps become available:
@@ -81,7 +83,7 @@ Floating windows may be dragged while WinBender is active.
 
 ```lua
 require('winbender').setup({
-  toggle_key = '<leader>f',  -- Key to toggle WinBender mode (set to nil to disable)
+  toggle_key = '<leader>f',  -- Key to toggle WinBender mode (default: nil)
   keymaps = {
     -- Override default keymaps
   },
