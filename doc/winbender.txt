@@ -37,12 +37,19 @@ When WinBender mode is active:
 ==============================================================================
 3. USAGE                                                     *winbender-usage*
 
-Note: The toggle keymap is only available if you call |winbender.setup()|.
-Without calling setup, only the |:WinBenderToggle| command will be available.
-
 To activate WinBender mode, use the |:WinBenderToggle| command, or, if
 configured, the toggle key. WinBender will search for floating windows in the
 current tab and create a layer of keymaps for manipulating them.
+
+Create a toggle key by either setting the `toggle_key` option in your `opts`
+configuration (see |winbender-config-toggle_key|), or by mapping your own key to
+`<Plug>(winbender-toggle)` in your configuration. For example, to use
+`<leader>f` as the toggle key:
+
+>lua
+    vim.keymap.set('n', '<leader>f', '<Plug>(winbender-toggle)',
+                   { desc = 'WinBender: Toggle activation' })
+<
 
 While active:
   1. WinBender keymaps become active

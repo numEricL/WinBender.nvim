@@ -40,7 +40,7 @@ call plug#end()
 
 Toggle WinBender with `:WinBenderToggle` or create a keymap. There are two
 methods provided for defining a toggle keymap, either set the `toggle_key` in
-the `opt` config table, or define your own keymap:
+the `opts` config table, or define your own keymap:
 
 ```lua
 vim.keymap.set('n', '<leader>f', '<Plug>(winbender-toggle)')
