@@ -55,7 +55,7 @@ options provided for defining a toggle keymap, either set the `toggle_key`
 option in the setup configuration or define your own keymap to the plugmap:
 
 ```lua
-vim.keymap.set('n', '<leader>f', '<plug>(winbender-toggle)')
+vim.keymap.set('n', '<leader>f', '<Plug>(winbender-toggle)')
 ```
 
 While active, floating windows are numbered for quick access and the following

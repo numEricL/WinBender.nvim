@@ -41,7 +41,7 @@ Note: The toggle keymap is only available if you call |winbender.setup()|.
 Without calling setup, only the |:WinBenderToggle| command will be available.
 
 To activate WinBender mode, use the |:WinBenderToggle| command, or, if
-configured , the toggle key. WinBender will search for floating windows in the
+configured, the toggle key. WinBender will search for floating windows in the
 current tab and create a layer of keymaps for manipulating them.
 
 While active:
@@ -74,7 +74,7 @@ operation. See |winbender-cyclops-integration|.
 
 Toggle Key~
                                                    *winbender-toggle-default*
-<plug>(winbender-toggle)     Toggle WinBender mode
+<Plug>(winbender-toggle)     Toggle WinBender mode
                              (configurable via |winbender-config|)
 
 WinBender Mode Keymaps~
@@ -159,7 +159,7 @@ See |winbender-config-mouse_enabled|.
 Configure WinBender by calling the setup function. Default configuration:
 >lua
     require('winbender').setup({
-      toggle_key = 'nil',
+      toggle_key = nil,
       mouse_enabled = true,
       keymaps = {
         focus_next = 'f',
