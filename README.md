@@ -24,35 +24,23 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 }
 ```
 
+**Note:** The `opts` table is optional. If omitted, default settings will be
+used. See the Configuration section below or the documentation for details.
+
+
 Using [Plug](https://github.com/junegunn/vim-plug):
 
 ```vim
 call plug#begin()
 Plug 'numEricL/WinBender.nvim'
 call plug#end()
-
-" Call setup to enable the toggle keymap
-lua require('winbender').setup()
-```
-
-**Note:** The `opts` table is optional. If omitted, default settings will be
-used. See the documentation for full details.
-
-```lua
-require('winbender').setup({
-  toggle_key = '<leader>f',  -- Define a toggle key
-  step_size = {
-    position = 10,
-    size = 10,
-  }
-})
 ```
 
 ## Usage
 
-Toggle WinBender with `:WinBenderToggle` or setup a keymap. There are two
-options provided for defining a toggle keymap, either set the `toggle_key`
-option in the setup configuration or define your own keymap to the plugmap:
+Toggle WinBender with `:WinBenderToggle` or create a keymap. There are two
+methods provided for defining a toggle keymap, either set the `toggle_key` in
+the `opt` config table, or define your own keymap:
 
 ```lua
 vim.keymap.set('n', '<leader>f', '<Plug>(winbender-toggle)')
