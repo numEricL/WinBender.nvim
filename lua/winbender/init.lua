@@ -14,7 +14,7 @@ local function enable()
     if winid then
         state.init(initial_winid)
         quick_access.init()
-        core.init_display_info()
+        core.init_floating_windows()
         core.focus_window(winid)
         keymaps.save()
         keymaps.set_maps()
