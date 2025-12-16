@@ -19,7 +19,7 @@ local function init_drag_floating_window()
     local winid = mouse_pos.winid
 
     local silent = true
-    if not core.validate_floating_window(winid, silent) then
+    if not state.validate_floating_window(winid, silent) then
         return
     end
 

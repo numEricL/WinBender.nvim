@@ -3,19 +3,19 @@ local M = {}
 local config  = require("winbender.config")
 
 local function enable()
-    local state   = require("winbender.state")
-    local core    = require("winbender.core")
-    local keymaps = require("winbender.keymaps")
-    local mouse   = require("winbender.mouse")
+    local state        = require("winbender.state")
+    local quick_access = require("winbender.quick_access")
+    local core         = require("winbender.core")
+    local keymaps      = require("winbender.keymaps")
+    local mouse        = require("winbender.mouse")
 
-    local winid_on_enable = vim.api.nvim_get_current_win()
+    local initial_winid = vim.api.nvim_get_current_win()
     local winid = core.find_floating_window('forward')
     if winid then
-        state.clear_win_configs()
-        state.index_floating_windows()
-        state.update_titles_with_quick_access()
+        state.init(initial_winid)
+        core.init_display_info()
         core.focus_window(winid)
-        state.winid_on_enable = winid_on_enable
+        quick_access.init()
         keymaps.save()
         keymaps.set_maps()
         if config.options.mouse_enabled then
@@ -33,9 +33,8 @@ local function disable()
     local keymaps = require("winbender.keymaps")
     local mouse   = require("winbender.mouse")
 
-    core.focus_window(state.winid_on_enable)
-    state.restore_titles()
-    state.winid_on_enable = nil
+    core.focus_window(state.initial_winid())
+    state.exit()
     keymaps.restore_maps()
     if config.options.mouse_enabled then
         mouse.restore_maps()
@@ -44,8 +43,7 @@ end
 
 function M.toggle()
     local state   = require("winbender.state")
-
-    if state.winid_on_enable == nil then
+    if not state.active() then
         enable()
     else
         disable()
