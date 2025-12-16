@@ -41,12 +41,12 @@ local function get_pos_bound(win_config, dir)
     end
 end
 
-local function get_upper_size_deltas(win_config)
+local function get_max_resize_deltas(win_config)
     local anchor = win_config.anchor
     local row, col = win_config.row, win_config.col
     local width, height = get_win_size(win_config)
-    width_bound  = (anchor:sub(2,2) == 'W') and (vim.o.columns - col - width) or (col - width)
-    height_bound = (anchor:sub(1,1) == 'N') and (vim.o.lines - vim.o.cmdheight - row - height) or (row - height)
+    local width_bound  = (anchor:sub(2,2) == 'W') and (vim.o.columns - col - width) or (col - width)
+    local height_bound = (anchor:sub(1,1) == 'N') and (vim.o.lines - vim.o.cmdheight - row - height) or (row - height)
     return width_bound, height_bound
 end
 
@@ -76,8 +76,7 @@ end
 
 function M.resize_floating_window(winid, x_delta, y_delta)
     local win_config = compat.nvim_win_get_config(winid)
-    local width_bound, height_bound = get_upper_size_deltas(win_config)
-    print("Bounds: ", width_bound, height_bound)
+    local width_bound, height_bound = get_max_resize_deltas(win_config)
     x_delta = math.min(x_delta, width_bound)
     y_delta = math.min(y_delta, height_bound)
     win_config.height = math.max(win_config.height + y_delta, 1)
