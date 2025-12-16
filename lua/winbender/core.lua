@@ -5,6 +5,58 @@ local utils        = require("winbender.utils")
 local quick_access = require("winbender.quick_access")
 local compat       = require("winbender.compat")
 
+local function get_win_size(win_config)
+    local width = win_config.width
+    local height = win_config.height
+    local border = win_config.border
+    local border_width = 0
+    local border_height = 0
+
+    if border then
+        if type(border) == "string" then
+            border_width = 2
+            border_height = 2
+        elseif type(border) == "table" then
+            border_height = border_height + ((border[2] ~= "" and 1) or 0)
+            border_height = border_height + ((border[6] ~= "" and 1) or 0)
+            border_width  = border_width  + ((border[4] ~= "" and 1) or 0)
+            border_width  = border_width  + ((border[8] ~= "" and 1) or 0)
+        end
+    end
+
+    return width + border_width, height + border_height
+end
+
+local function get_pos_bound(win_config, dir)
+    local anchor = win_config.anchor
+    local width, height = get_win_size(win_config)
+    if dir == 'N' then
+        return anchor:sub(1,1) == 'N' and 0 or height
+    elseif dir == 'S' then
+        return vim.o.lines - vim.o.cmdheight - (anchor:sub(1,1) == 'S' and 0 or height)
+    elseif dir == 'W' then
+        return anchor:sub(2,2) == 'W' and 0 or width
+    elseif dir == 'E' then
+        return vim.o.columns - (anchor:sub(2,2) == 'E' and 0 or width)
+    end
+end
+
+local function get_upper_size_deltas(win_config)
+    local anchor = win_config.anchor
+    local row, col = win_config.row, win_config.col
+    local width, height = get_win_size(win_config)
+    width_bound  = (anchor:sub(2,2) == 'W') and (vim.o.columns - col - width) or (col - width)
+    height_bound = (anchor:sub(1,1) == 'N') and (vim.o.lines - vim.o.cmdheight - row - height) or (row - height)
+    return width_bound, height_bound
+end
+
+local function reposition_in_bounds(win_config)
+    win_config.row = math.max(win_config.row, get_pos_bound(win_config, 'N'))
+    win_config.row = math.min(win_config.row, get_pos_bound(win_config, 'S'))
+    win_config.col = math.max(win_config.col, get_pos_bound(win_config, 'W'))
+    win_config.col = math.min(win_config.col, get_pos_bound(win_config, 'E'))
+end
+
 function M.get_current_floating_window()
     local cur_winid = vim.api.nvim_get_current_win()
     if state.validate_floating_window(cur_winid) then
@@ -18,11 +70,16 @@ function M.reposition_floating_window(winid, x_delta, y_delta)
     local win_config = compat.nvim_win_get_config(winid)
     win_config.col = win_config.col + x_delta
     win_config.row = win_config.row + y_delta
+    reposition_in_bounds(win_config)
     compat.nvim_win_set_config(winid, win_config)
 end
 
 function M.resize_floating_window(winid, x_delta, y_delta)
     local win_config = compat.nvim_win_get_config(winid)
+    local width_bound, height_bound = get_upper_size_deltas(win_config)
+    print("Bounds: ", width_bound, height_bound)
+    x_delta = math.min(x_delta, width_bound)
+    y_delta = math.min(y_delta, height_bound)
     win_config.height = math.max(win_config.height + y_delta, 1)
     win_config.width = math.max(win_config.width + x_delta, 1)
     compat.nvim_win_set_config(winid, win_config)
@@ -88,31 +145,9 @@ function M.focus_window(winid, silent)
     end
 end
 
-local function get_floating_window_size(win_config)
-    local width = win_config.width
-    local height = win_config.height
-    local border = win_config.border
-    local border_width = 0
-    local border_height = 0
-
-    if border then
-        if type(border) == "string" then
-            border_width = 2
-            border_height = 2
-        elseif type(border) == "table" then
-            border_height = border_height + ((border[2] ~= "" and 1) or 0)
-            border_height = border_height + ((border[6] ~= "" and 1) or 0)
-            border_width = border_width + ((border[4] ~= "" and 1) or 0)
-            border_width = border_width + ((border[8] ~= "" and 1) or 0)
-        end
-    end
-
-    return width + border_width, height + border_height
-end
-
 function M.update_anchor(winid, anchor)
     local win_config = compat.nvim_win_get_config(winid)
-    local width, height = get_floating_window_size(win_config)
+    local width, height = get_win_size(win_config)
 
     local old_anchor = win_config.anchor
     local x_old = (old_anchor:sub(2,2) == 'E' and 1) or 0
@@ -147,11 +182,14 @@ function M.display_info(winid)
     compat.nvim_win_set_config(winid, win_config)
 end
 
-function M.init_display_info()
+function M.init_floating_windows()
     local silent = true
     local wins = vim.api.nvim_tabpage_list_wins(0)
     for _, winid in ipairs(wins) do
         if state.validate_floating_window(winid, silent) then
+            local win_config = compat.nvim_win_get_config(winid)
+            reposition_in_bounds(win_config)
+            compat.nvim_win_set_config(winid, win_config)
             M.display_info(winid)
         end
     end

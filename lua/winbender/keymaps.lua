@@ -34,6 +34,15 @@ local function reposition(args, count)
     core.display_info(winid)
 end
 
+local function update_anchor(args)
+    local winid = core.get_current_floating_window()
+    if not winid then
+        return
+    end
+    core.update_anchor(winid, args.anchor)
+    core.display_info(winid)
+end
+
 local function resize(args, count)
     local winid = core.get_current_floating_window()
     if not winid then
@@ -41,15 +50,6 @@ local function resize(args, count)
     end
     local step = (count == 0) and args.step or count
     core.resize_floating_window(winid, step*args.x_delta, step*args.y_delta)
-    core.display_info(winid)
-end
-
-local function update_anchor(args)
-    local winid = core.get_current_floating_window()
-    if not winid then
-        return
-    end
-    core.update_anchor(winid, args.anchor)
     core.display_info(winid)
 end
 
