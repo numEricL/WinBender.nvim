@@ -25,6 +25,7 @@ using intuitive keybindings and mouse controls.
 When WinBender mode is active:
   - Floating windows are numbered for quick access (g1-g9)
   - Window titles are temporarily modified to show quick access labels
+  - Window footers display details (winid, anchor, row, col)
   - A set of keybindings becomes available for window manipulation
   - Mouse drag and drop is enabled for repositioning windows
   - The original window configuration is saved for reset capability
@@ -32,7 +33,12 @@ When WinBender mode is active:
 ==============================================================================
 2. REQUIREMENTS                                       *winbender-requirements*
 
-  - Neovim 0.8.0 or later
+  - Neovim 0.7.2 or later (with partial compatibility)
+  - Neovim 0.10.0 or later recommended for full feature support
+
+Note: Older versions (0.7.2+) are supported with limited functionality. The
+floating window title and footer features used for quick access labels are
+not be available. Core window manipulation functionality remains available.
 
 ==============================================================================
 3. USAGE                                                     *winbender-usage*
@@ -55,7 +61,8 @@ While active:
   1. WinBender keymaps become active
   2. Focus is set to the first floating window
   3. Floating windows are numbered with [g1], [g2], etc. in their titles
-  4. Original keymaps are restored on exit
+  4. Floating window footers display details (winid, anchor, row, col)
+  5. Original keymaps are restored on exit
 
 Use the toggle again to deactivate WinBender. This will restore the original
 window focus, remove the quick access labels, and restore previous keymaps.

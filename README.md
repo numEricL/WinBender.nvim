@@ -11,6 +11,11 @@ A Neovim plugin for manipulating floating windows
 - Anchor points are adjusted quietly and automatically
 - Manually specify anchor point if desired
 
+## Requirements
+
+- Neovim 0.7.2 or later (with partial compatibility)
+- Neovim 0.10.0 or later recommended for full feature support (title/footer labels)
+
 ## Installation
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim):
@@ -46,8 +51,9 @@ the `opts` config table, or define your own keymap:
 vim.keymap.set('n', '<leader>f', '<Plug>(winbender-toggle)')
 ```
 
-While active, floating windows are numbered for quick access and the following
-keymaps become available:
+While active, floating windows are numbered for quick access, display details
+(winid, anchor, row, col) in the footer, and the following keymaps become
+available:
 
 | Key           | Action                                      |
 |---------------|---------------------------------------------|
