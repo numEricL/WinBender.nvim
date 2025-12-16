@@ -4,8 +4,13 @@ local version_has_title = nil
 local version_has_footer = nil
 
 function M.init()
-    version_has_title  = pcall(vim.api.nvim_win_set_config, 0, { title = "" })
-    version_has_footer = pcall(vim.api.nvim_win_set_config, 0, { footer = "" })
+    if vim.fn.has("nvim-0.10.0") == 1 then
+        version_has_title = true
+        version_has_footer = true
+    else
+        version_has_title  = pcall(vim.api.nvim_win_set_config, 0, { title = "" })
+        version_has_footer = pcall(vim.api.nvim_win_set_config, 0, { footer = "" })
+    end
 end
 
 function M.has_title()

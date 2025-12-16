@@ -143,7 +143,7 @@ function M.display_info(winid)
     local label = "[" .. winid .. "]"
     label = label .. "[" .. win_config.anchor .. "]"
     label = label .. "(" .. win_config.row .. "," .. win_config.col .. ")"
-    win_config.footer = utils.prepend_title(footer, label)
+    win_config.footer = utils.prepend_label(footer, label)
     compat.nvim_win_set_config(winid, win_config)
 end
 

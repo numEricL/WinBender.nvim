@@ -13,9 +13,9 @@ local function enable()
     local winid = core.find_floating_window('forward')
     if winid then
         state.init(initial_winid)
+        quick_access.init()
         core.init_display_info()
         core.focus_window(winid)
-        quick_access.init()
         keymaps.save()
         keymaps.set_maps()
         if config.options.mouse_enabled then
