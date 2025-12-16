@@ -23,4 +23,12 @@ function M.prepend_title(title, label)
     end
 end
 
+-- Extract numeric values from row/col (handle both plain numbers and tables
+-- that are common on older Neovim versions)
+function M.win_config_row_col(win_config)
+    local row_val = type(win_config.row) == "table" and win_config.row[false] or win_config.row
+    local col_val = type(win_config.col) == "table" and win_config.col[false] or win_config.col
+    return row_val, col_val
+end
+
 return M
