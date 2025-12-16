@@ -38,7 +38,7 @@ When WinBender mode is active:
 
 Note: Older versions (0.7.2+) are supported with limited functionality. The
 floating window title and footer features used for quick access labels are
-not be available. Core window manipulation functionality remains available.
+not available. Core window manipulation functionality remains available.
 
 ==============================================================================
 3. USAGE                                                     *winbender-usage*

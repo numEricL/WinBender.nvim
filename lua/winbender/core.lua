@@ -139,10 +139,10 @@ function M.display_info(winid)
     end
 
     local win_config = compat.nvim_win_get_config(winid)
-    local footer = state.get_config(winid).footer
+    local footer = state.get_config(winid) and state.get_config(winid).footer or ""
     local label = "[" .. winid .. "]"
-    local label = label .. "[" .. win_config.anchor .. "]"
-    local label = label .. "(" .. win_config.row .. "," .. win_config.col .. ")"
+    label = label .. "[" .. win_config.anchor .. "]"
+    label = label .. "(" .. win_config.row .. "," .. win_config.col .. ")"
     win_config.footer = utils.prepend_title(footer, label)
     compat.nvim_win_set_config(winid, win_config)
 end
@@ -151,7 +151,6 @@ function M.init_display_info()
     local silent = true
     local wins = vim.api.nvim_tabpage_list_wins(0)
     for _, winid in ipairs(wins) do
-        local win_config = compat.nvim_win_get_config(winid)
         if state.validate_floating_window(winid, silent) then
             M.display_info(winid)
         end

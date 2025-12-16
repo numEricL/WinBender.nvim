@@ -14,7 +14,6 @@ local function init_index()
     local i = 1
     local wins = vim.api.nvim_tabpage_list_wins(0)
     for _, winid in ipairs(wins) do
-        local win_config = compat.nvim_win_get_config(winid)
         if state.validate_floating_window(winid, silent) then
             indexed_winids[i] = winid
             reverse_lookup[winid] = i
@@ -25,7 +24,7 @@ end
 
 function M.display(winid, index)
     local win_config = compat.nvim_win_get_config(winid)
-    local title = state.get_config(winid).title
+    local title = state.get_config(winid) and state.get_config(winid).title or ""
     win_config.title = utils.prepend_title(title, "[g" .. index .. "]")
     compat.nvim_win_set_config(winid, win_config)
 end
