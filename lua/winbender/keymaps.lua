@@ -1,8 +1,9 @@
 local M = {}
 
-local core = require("winbender.core")
-local state = require("winbender.state")
-local options = require("winbender.config").options
+local core         = require("winbender.core")
+local state        = require("winbender.state")
+local quick_access = require("winbender.quick_access")
+local options      = require("winbender.config").options
 
 local keymaps = {}
 
@@ -20,6 +21,7 @@ local function reset_window(args)
         return
     end
     state.restore_config(winid)
+    core.display_info(winid)
 end
 
 local function reposition(args, count)
@@ -29,6 +31,7 @@ local function reposition(args, count)
     end
     local step = (count == 0) and args.step or count
     core.reposition_floating_window(winid, step*args.x_delta, step*args.y_delta)
+    core.display_info(winid)
 end
 
 local function resize(args, count)
@@ -38,6 +41,7 @@ local function resize(args, count)
     end
     local step = (count == 0) and args.step or count
     core.resize_floating_window(winid, step*args.x_delta, step*args.y_delta)
+    core.display_info(winid)
 end
 
 local function update_anchor(args)
@@ -46,7 +50,7 @@ local function update_anchor(args)
         return
     end
     core.update_anchor(winid, args.anchor)
-    print('WinBender: Anchor set to ' .. args.anchor)
+    core.display_info(winid)
 end
 
 local function resize_dir(args, count)
@@ -69,6 +73,7 @@ local function resize_dir(args, count)
     local step = (count == 0) and args.step or count
     core.resize_floating_window(winid, step*args.x_delta, step*args.y_delta)
     core.update_anchor(winid, old_anchor)
+    core.display_info(winid)
 end
 
 local function get_maps()
@@ -108,8 +113,8 @@ local function get_maps()
     return maps
 end
 
-local function quick_access(id)
-    local winid = state.quick_access_winid(id)
+local function focus_quick_access(id)
+    local winid = quick_access.get_winid(id)
     if not winid then
         return
     end
@@ -123,7 +128,7 @@ function M.set_maps()
         end, { desc = "WinBender: " .. action })
     end
     for n = 1, 9 do
-        vim.keymap.set('n', 'g' .. n, function() quick_access(n) end, { desc = 'WinBender: quick access' })
+        vim.keymap.set('n', 'g' .. n, function() focus_quick_access(n) end, { desc = 'WinBender: quick access' })
     end
     local keys = options.keymaps
     local cyclops_opts = options.cyclops_opts

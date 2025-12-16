@@ -1,28 +1,13 @@
 local M = {}
 
-local state  = require("winbender.state")
-
-function M.validate_floating_window(winid, silent)
-    if not vim.api.nvim_win_is_valid(winid) then
-        if not silent then
-            vim.notify("WinBender: Window " .. winid .. " is not valid", vim.log.levels.WARN)
-        end
-        return false
-    end
-    local win_config = vim.api.nvim_win_get_config(winid)
-    if not win_config.relative or win_config.relative == "" then
-        if not silent then
-            vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.WARN)
-        end
-        return false
-    end
-    state.save_config(winid)
-    return true
-end
+local state        = require("winbender.state")
+local utils        = require("winbender.utils")
+local quick_access = require("winbender.quick_access")
+local compat       = require("winbender.compat")
 
 function M.get_current_floating_window()
     local cur_winid = vim.api.nvim_get_current_win()
-    if M.validate_floating_window(cur_winid) then
+    if state.validate_floating_window(cur_winid) then
         return cur_winid
     else
         return nil
@@ -30,17 +15,17 @@ function M.get_current_floating_window()
 end
 
 function M.reposition_floating_window(winid, x_delta, y_delta)
-    local win_config = vim.api.nvim_win_get_config(winid)
+    local win_config = compat.nvim_win_get_config(winid)
     win_config.col = win_config.col + x_delta
     win_config.row = win_config.row + y_delta
-    vim.api.nvim_win_set_config(winid, win_config)
+    compat.nvim_win_set_config(winid, win_config)
 end
 
 function M.resize_floating_window(winid, x_delta, y_delta)
-    local win_config = vim.api.nvim_win_get_config(winid)
+    local win_config = compat.nvim_win_get_config(winid)
     win_config.height = math.max(win_config.height + y_delta, 1)
     win_config.width = math.max(win_config.width + x_delta, 1)
-    vim.api.nvim_win_set_config(winid, win_config)
+    compat.nvim_win_set_config(winid, win_config)
 end
 
 function M.find_next_floating_window(dir, count)
@@ -63,14 +48,15 @@ function M.find_next_floating_window(dir, count)
         return ((index - 1) % n) + 1
     end
 
+    local silent = true
     local counter = 0
     local i = 1
     while counter < count1 do
         local idx = dir == 'forward' and (cur_idx + i) or (cur_idx - i)
         idx = wrap_index(idx, #wins)
         local winid = wins[idx]
-        local win_config = vim.api.nvim_win_get_config(winid)
-        if win_config.relative ~= "" then
+        local win_config = compat.nvim_win_get_config(winid)
+        if state.validate_floating_window(winid, silent) then
             counter = counter + 1
             if counter == count1 then
                 return winid
@@ -85,10 +71,10 @@ end
 
 -- checks the current window first, then other windows in descending order by winid
 function M.find_floating_window(dir)
-    local cur_win = vim.api.nvim_get_current_win()
-    local win_config = vim.api.nvim_win_get_config(cur_win)
-    if win_config.relative ~= "" then
-        return cur_win
+    local winid = vim.api.nvim_get_current_win()
+    local silent = true
+    if state.validate_floating_window(winid, silent) then
+        return winid
     else
         return M.find_next_floating_window(dir)
     end
@@ -125,7 +111,7 @@ local function get_floating_window_size(win_config)
 end
 
 function M.update_anchor(winid, anchor)
-    local win_config = vim.api.nvim_win_get_config(winid)
+    local win_config = compat.nvim_win_get_config(winid)
     local width, height = get_floating_window_size(win_config)
 
     local old_anchor = win_config.anchor
@@ -138,12 +124,37 @@ function M.update_anchor(winid, anchor)
     win_config.anchor = anchor
     win_config.col = win_config.col + (x_new - x_old) * width
     win_config.row = win_config.row + (y_new - y_old) * height
-    vim.api.nvim_win_set_config(winid, win_config)
+    compat.nvim_win_set_config(winid, win_config)
 end
 
 function M.get_anchor(winid)
-    local win_config = vim.api.nvim_win_get_config(winid)
+    local win_config = compat.nvim_win_get_config(winid)
     return win_config.anchor
+end
+
+function M.display_info(winid)
+    local qa_index = quick_access.get_index(winid)
+    if qa_index then
+        quick_access.display(winid, qa_index)
+    end
+
+    local win_config = compat.nvim_win_get_config(winid)
+    local footer = state.get_config(winid) and state.get_config(winid).footer or ""
+    local label = "[" .. winid .. "]"
+    label = label .. "[" .. win_config.anchor .. "]"
+    label = label .. "(" .. win_config.row .. "," .. win_config.col .. ")"
+    win_config.footer = utils.prepend_label(footer, label)
+    compat.nvim_win_set_config(winid, win_config)
+end
+
+function M.init_display_info()
+    local silent = true
+    local wins = vim.api.nvim_tabpage_list_wins(0)
+    for _, winid in ipairs(wins) do
+        if state.validate_floating_window(winid, silent) then
+            M.display_info(winid)
+        end
+    end
 end
 
 return M
