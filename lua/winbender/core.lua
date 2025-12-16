@@ -3,6 +3,7 @@ local M = {}
 local state        = require("winbender.state")
 local utils        = require("winbender.utils")
 local quick_access = require("winbender.quick_access")
+local compat       = require("winbender.compat")
 
 function M.get_current_floating_window()
     local cur_winid = vim.api.nvim_get_current_win()
@@ -15,7 +16,7 @@ end
 
 function M.reposition_floating_window(winid, x_delta, y_delta)
     local win_config = vim.api.nvim_win_get_config(winid)
-    local row, col = utils.win_config_row_col(win_config)
+    local row, col = compat.win_config_row_col(win_config)
     col = col + x_delta
     row = row + y_delta
     win_config.row = row
@@ -123,7 +124,7 @@ function M.update_anchor(winid, anchor)
     local x_new = (anchor:sub(2,2) == 'E' and 1) or 0
     local y_new = (anchor:sub(1,1) == 'S' and 1) or 0
 
-    local row, col = utils.win_config_row_col(win_config)
+    local row, col = compat.win_config_row_col(win_config)
     col = col + (x_new - x_old) * width
     row = row + (y_new - y_old) * height
 
@@ -145,7 +146,7 @@ function M.display_info(winid)
     end
 
     local win_config = vim.api.nvim_win_get_config(winid)
-    local row, col = utils.win_config_row_col(win_config)
+    local row, col = compat.win_config_row_col(win_config)
     local footer = state.get_config(winid).footer
     local label = "[" .. winid .. "]"
     local label = label .. "[" .. win_config.anchor .. "]"

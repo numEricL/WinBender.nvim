@@ -1,7 +1,7 @@
 local M = {}
 
 local utils = require("winbender.utils")
-local nvim_version = require("winbender.nvim_version")
+local compat = require("winbender.compat")
 
 local init_winid = nil
 local win_configs = {}
@@ -17,7 +17,7 @@ end
 function M.init(initial_winid)
     init_winid = initial_winid
     win_configs = {}
-    nvim_version.init()
+    compat.init()
 end
 
 function M.get_config(winid)
