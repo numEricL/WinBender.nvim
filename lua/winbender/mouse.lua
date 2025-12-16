@@ -1,9 +1,9 @@
 local M = {}
 
-local core  = require("winbender.core")
-local state = require("winbender.state")
-local utils = require("winbender.utils")
-local compat       = require("winbender.compat")
+local core   = require("winbender.core")
+local state  = require("winbender.state")
+local utils  = require("winbender.utils")
+local compat = require("winbender.compat")
 
 local mouse_maps = {}
 
@@ -25,18 +25,15 @@ local function init_drag_floating_window()
         return
     end
 
-    local win_config = vim.api.nvim_win_get_config(winid)
-
-    -- Extract numeric values from row/col (handle both plain numbers and tables)
-    local row, col = compat.win_config_row_col(win_config)
+    local win_config = compat.nvim_win_get_config(winid)
 
     drag_state = {
         active = true,
         winid = winid,
         start_mouse_row = mouse_pos.screenrow,
         start_mouse_col = mouse_pos.screencol,
-        start_win_row = row,
-        start_win_col = col,
+        start_win_row = win_config.row,
+        start_win_col = win_config.col,
     }
 end
 
@@ -54,11 +51,11 @@ local function drag_floating_window()
     local row_delta = mouse_pos.screenrow - drag_state.start_mouse_row
     local col_delta = mouse_pos.screencol - drag_state.start_mouse_col
     
-    local win_config = vim.api.nvim_win_get_config(drag_state.winid)
+    local win_config = compat.nvim_win_get_config(drag_state.winid)
     win_config.row = drag_state.start_win_row + row_delta
     win_config.col = drag_state.start_win_col + col_delta
     
-    vim.api.nvim_win_set_config(drag_state.winid, win_config)
+    compat.nvim_win_set_config(drag_state.winid, win_config)
 end
 
 local function end_drag_floating_window()

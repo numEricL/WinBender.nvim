@@ -1,7 +1,8 @@
 local M = {}
 
-local state = require("winbender.state")
-local utils = require("winbender.utils")
+local state  = require("winbender.state")
+local utils  = require("winbender.utils")
+local compat = require("winbender.compat")
 
 local indexed_winids = {}
 local reverse_lookup = {}
@@ -13,7 +14,7 @@ local function init_index()
     local i = 1
     local wins = vim.api.nvim_tabpage_list_wins(0)
     for _, winid in ipairs(wins) do
-        local win_config = vim.api.nvim_win_get_config(winid)
+        local win_config = compat.nvim_win_get_config(winid)
         if state.validate_floating_window(winid, silent) then
             indexed_winids[i] = winid
             reverse_lookup[winid] = i
@@ -23,10 +24,10 @@ local function init_index()
 end
 
 function M.display(winid, index)
-    local win_config = vim.api.nvim_win_get_config(winid)
+    local win_config = compat.nvim_win_get_config(winid)
     local title = state.get_config(winid).title
     win_config.title = utils.prepend_title(title, "[g" .. index .. "]")
-    vim.api.nvim_win_set_config(winid, win_config)
+    compat.nvim_win_set_config(winid, win_config)
 end
 
 function M.init()

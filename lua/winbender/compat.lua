@@ -16,12 +16,22 @@ function M.has_footer()
     return version_has_footer
 end
 
--- Extract numeric values from row/col (handle both plain numbers and tables
--- that are common on older Neovim versions)
-function M.win_config_row_col(win_config)
-    local row_val = type(win_config.row) == "table" and win_config.row[false] or win_config.row
-    local col_val = type(win_config.col) == "table" and win_config.col[false] or win_config.col
-    return row_val, col_val
+-- neovim 0.7.2 returns a boolean table for row/col of floating windows
+function M.nvim_win_get_config(winid)
+    local win_config = vim.api.nvim_win_get_config(winid)
+    win_config.row = type(win_config.row) == "table" and win_config.row[false] or win_config.row
+    win_config.col = type(win_config.col) == "table" and win_config.col[false] or win_config.col
+    return win_config
+end
+
+function M.nvim_win_set_config(winid, win_config)
+    if not version_has_title then
+        win_config.title = nil
+    end
+    if not version_has_footer then
+        win_config.footer = nil
+    end
+    vim.api.nvim_win_set_config(winid, win_config)
 end
 
 return M
