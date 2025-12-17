@@ -21,7 +21,7 @@ local function reset_window(args)
         return
     end
     state.restore_config(winid)
-    core.reposition_floating_window(winid, 0, 0) -- for repsositioning in bounds
+    core.reposition_floating_window(winid, 0, 0) -- for repositioning in bounds
     core.display_info(winid)
 end
 
