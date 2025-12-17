@@ -69,6 +69,26 @@ available:
 
 All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
 
+### Experimental Snap Feature
+
+WinBender includes an experimental snap feature that allows windows to be
+quickly snapped to screen edges. This feature is disabled by default and must
+be explicitly enabled via keymaps configuration. It may have breaking changes in
+the future.
+
+To enable snap keymaps, add them to your setup:
+
+```lua
+require("winbender").setup{
+  keymaps = {
+    snap_left  = "gh",
+    snap_down  = "gj",
+    snap_up    = "gk",
+    snap_right = "gl"
+  }
+}
+```
+
 ### Mouse Support
 
 Floating windows may be dragged while WinBender is active.

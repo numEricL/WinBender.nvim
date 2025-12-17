@@ -1,24 +1,34 @@
 local M = {}
 
-local version_has_title = nil
-local version_has_footer = nil
+local initialized = false
+local compat_has = {
+    title = nil,
+    footer = nil,
+}
 
 function M.init()
-    if vim.fn.has("nvim-0.10.0") == 1 then
-        version_has_title = true
-        version_has_footer = true
+    if initialized then
+        return
     else
-        version_has_title  = pcall(vim.api.nvim_win_set_config, 0, { title = "" })
-        version_has_footer = pcall(vim.api.nvim_win_set_config, 0, { footer = "" })
+        initialized = true
+    end
+    if vim.fn.has("nvim-0.10.0") == 1 then
+        compat_has.title = true
+        compat_has.footer = true
+    else
+        compat_has.title  = pcall(vim.api.nvim_win_set_config, 0, { title = "" })
+        compat_has.footer = pcall(vim.api.nvim_win_set_config, 0, { footer = "" })
     end
 end
 
-function M.has_title()
-    return version_has_title
+local function has_title()
+    M.init()
+    return compat_has.title
 end
 
-function M.has_footer()
-    return version_has_footer
+local function has_footer()
+    M.init()
+    return compat_has.footer
 end
 
 -- neovim 0.7.2 returns a boolean table for row/col of floating windows
@@ -30,10 +40,10 @@ function M.nvim_win_get_config(winid)
 end
 
 function M.nvim_win_set_config(winid, win_config)
-    if not version_has_title then
+    if not has_title() then
         win_config.title = nil
     end
-    if not version_has_footer then
+    if not has_footer() then
         win_config.footer = nil
     end
     vim.api.nvim_win_set_config(winid, win_config)

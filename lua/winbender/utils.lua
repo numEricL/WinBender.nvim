@@ -15,4 +15,8 @@ function M.prepend_label(title, label)
     end
 end
 
+function M.math_round(num)
+    return num >= 0 and math.floor(num + 0.5) or math.ceil(num - 0.5)
+end
+
 return M

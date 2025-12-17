@@ -21,6 +21,7 @@ local function reset_window(args)
         return
     end
     state.restore_config(winid)
+    core.reposition_floating_window(winid, 0, 0) -- for repositioning in bounds
     core.display_info(winid)
 end
 
@@ -59,21 +60,42 @@ local function resize_dir(args, count)
         return
     end
     local old_anchor = core.get_anchor(winid)
-    local anchor = old_anchor
-    if args.dir == 'up' then
-        anchor = 'S' .. anchor:sub(2,2)
-    elseif args.dir == 'down' then
-        anchor = 'N' .. anchor:sub(2,2)
-    elseif args.dir == 'left' then
-        anchor = anchor:sub(1,1) .. 'E'
-    elseif args.dir == 'right' then
-        anchor = anchor:sub(1,1) .. 'W'
-    end
-    core.update_anchor(winid, anchor)
-    local step = (count == 0) and args.step or count
-    core.resize_floating_window(winid, step*args.x_delta, step*args.y_delta)
+    local dir_map = {
+        left = { anchor = old_anchor:sub(1,1) .. 'E', dx = 1, dy = 0 },
+        right= { anchor = old_anchor:sub(1,1) .. 'W', dx = 1, dy = 0 },
+        up   = { anchor = 'S' .. old_anchor:sub(2,2), dx = 0, dy = 1 },
+        down = { anchor = 'N' .. old_anchor:sub(2,2), dx = 0, dy = 1 },
+    }
+    local d = dir_map[args.dir]
+
+    local sign = (args.step > 0) and 1 or -1
+    local step = (count == 0) and args.step or sign*count
+
+    core.update_anchor(winid, d.anchor)
+    core.resize_floating_window(winid, step*d.dx, step*d.dy)
     core.update_anchor(winid, old_anchor)
     core.display_info(winid)
+end
+
+local function snap_dir(args)
+    local winid = core.get_current_floating_window()
+    if not winid then
+        return
+    end
+    local max_row = vim.o.lines
+    local max_col = vim.o.columns
+    local dir_map = {
+        left  = {dx = -max_col, dy = 0, dir1 = 'up',   dir2 = 'down',  step = max_row},
+        right = {dx =  max_col, dy = 0, dir1 = 'up',   dir2 = 'down',  step = max_row},
+        up    = {dx = 0, dy = -max_row, dir1 = 'left', dir2 = 'right', step = max_col},
+        down  = {dx = 0, dy =  max_row, dir1 = 'left', dir2 = 'right', step = max_col},
+    }
+
+    local d = dir_map[args.dir]
+    core.make_square_floating_window(winid)
+    core.reposition_floating_window(winid, d.dx, d.dy)
+    resize_dir({dir = d.dir1, step = d.step}, 0)
+    resize_dir({dir = d.dir2, step = d.step}, 0)
 end
 
 local function get_maps()
@@ -81,24 +103,29 @@ local function get_maps()
     local p_sz = options.step_size.position
     local s_sz = options.step_size.size
     local maps = {
-        focus_next   = { map = keys.focus_next,   func = focus_next,   args = {dir = 'forward'} },
+        focus_next   = { map = keys.focus_next,   func = focus_next,   args = {dir = 'forward' } },
         focus_prev   = { map = keys.focus_prev,   func = focus_next,   args = {dir = 'backward'} },
-        reset_window = { map = keys.reset_window, func = reset_window, args = {} },
+        reset_window = { map = keys.reset_window, func = reset_window, args = {}                 },
 
         shift_left  = { map = keys.shift_left,  func = reposition, args = {x_delta = -1, y_delta =  0, step = p_sz} },
         shift_right = { map = keys.shift_right, func = reposition, args = {x_delta =  1, y_delta =  0, step = p_sz} },
         shift_down  = { map = keys.shift_down,  func = reposition, args = {x_delta =  0, y_delta =  1, step = p_sz} },
         shift_up    = { map = keys.shift_up,    func = reposition, args = {x_delta =  0, y_delta = -1, step = p_sz} },
 
-        increase_left  = { map = keys.increase_left,  func = resize_dir, args = {dir = 'left',  x_delta =  1, y_delta =  0, step = s_sz} },
-        increase_right = { map = keys.increase_right, func = resize_dir, args = {dir = 'right', x_delta =  1, y_delta =  0, step = s_sz} },
-        increase_down  = { map = keys.increase_down,  func = resize_dir, args = {dir = 'down',  x_delta =  0, y_delta =  1, step = s_sz} },
-        increase_up    = { map = keys.increase_up,    func = resize_dir, args = {dir = 'up',    x_delta =  0, y_delta =  1, step = s_sz} },
+        increase_left  = { map = keys.increase_left,  func = resize_dir, args = {dir = 'left',  step = s_sz} },
+        increase_right = { map = keys.increase_right, func = resize_dir, args = {dir = 'right', step = s_sz} },
+        increase_down  = { map = keys.increase_down,  func = resize_dir, args = {dir = 'down',  step = s_sz} },
+        increase_up    = { map = keys.increase_up,    func = resize_dir, args = {dir = 'up',    step = s_sz} },
 
-        decrease_left  = { map = keys.decrease_left,  func = resize_dir, args = {dir = 'left',  x_delta = -1, y_delta =  0, step = s_sz} },
-        decrease_right = { map = keys.decrease_right, func = resize_dir, args = {dir = 'right', x_delta = -1, y_delta =  0, step = s_sz} },
-        decrease_down  = { map = keys.decrease_down,  func = resize_dir, args = {dir = 'down',  x_delta =  0, y_delta = -1, step = s_sz} },
-        decrease_up    = { map = keys.decrease_up,    func = resize_dir, args = {dir = 'up',    x_delta =  0, y_delta = -1, step = s_sz} },
+        decrease_left  = { map = keys.decrease_left,  func = resize_dir, args = {dir = 'left',  step = -s_sz} },
+        decrease_right = { map = keys.decrease_right, func = resize_dir, args = {dir = 'right', step = -s_sz} },
+        decrease_down  = { map = keys.decrease_down,  func = resize_dir, args = {dir = 'down',  step = -s_sz} },
+        decrease_up    = { map = keys.decrease_up,    func = resize_dir, args = {dir = 'up',    step = -s_sz} },
+
+        snap_left = { map = keys.snap_left,  func = snap_dir, args = {dir = 'left' } },
+        snap_right= { map = keys.snap_right, func = snap_dir, args = {dir = 'right'} },
+        snap_up   = { map = keys.snap_up,    func = snap_dir, args = {dir = 'up'   } },
+        snap_down = { map = keys.snap_down,  func = snap_dir, args = {dir = 'down' } },
 
         increase_width  = { map = keys.increase_width,  func = resize, args = {x_delta =  1, y_delta =  0, step = s_sz} },
         decrease_width  = { map = keys.decrease_width,  func = resize, args = {x_delta = -1, y_delta =  0, step = s_sz} },
@@ -123,9 +150,11 @@ end
 
 function M.set_maps()
     for action, mapping in pairs(get_maps()) do
-        vim.keymap.set('n', mapping.map, function()
-            mapping.func(mapping.args, vim.v.count)
-        end, { desc = "WinBender: " .. action })
+        if mapping.map then
+            vim.keymap.set('n', mapping.map, function()
+                mapping.func(mapping.args, vim.v.count)
+            end, { desc = "WinBender: " .. action })
+        end
     end
     for n = 1, 9 do
         vim.keymap.set('n', 'g' .. n, function() focus_quick_access(n) end, { desc = 'WinBender: quick access' })

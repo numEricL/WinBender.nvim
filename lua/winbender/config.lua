@@ -4,6 +4,7 @@ local defaults = {
     toggle_key = nil,
     mouse_enabled = true,
     quick_access_hl = 'WarningMsg',
+    cell_pixel_ratio_w_to_h = 12/26,
     keymaps = {
         focus_next   = 'f',
         focus_prev   = 'F',
@@ -23,6 +24,11 @@ local defaults = {
         decrease_down  = '<c-k>',
         decrease_up    = '<c-j>',
         decrease_right = '<c-h>',
+
+        snap_left  = nil,
+        snap_down  = nil,
+        snap_up    = nil,
+        snap_right = nil,
 
         increase_width  = '>',
         decrease_width  = '<',

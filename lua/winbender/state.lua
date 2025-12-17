@@ -6,6 +6,17 @@ local compat = require("winbender.compat")
 local init_winid = nil
 local win_configs = {}
 
+local function save_config(winid)
+    if win_configs[winid] == nil then
+        win_configs[winid] = compat.nvim_win_get_config(winid)
+    end
+end
+
+function M.init(initial_winid)
+    init_winid = initial_winid
+    win_configs = {}
+end
+
 function M.active()
     return init_winid ~= nil
 end
@@ -14,20 +25,8 @@ function M.initial_winid()
     return init_winid
 end
 
-function M.init(initial_winid)
-    init_winid = initial_winid
-    win_configs = {}
-    compat.init()
-end
-
 function M.get_config(winid)
     return win_configs[winid]
-end
-
-function M.save_config(winid)
-    if win_configs[winid] == nil then
-        win_configs[winid] = compat.nvim_win_get_config(winid)
-    end
 end
 
 function M.validate_floating_window(winid, silent)
@@ -44,7 +43,7 @@ function M.validate_floating_window(winid, silent)
         end
         return false
     end
-    M.save_config(winid)
+    save_config(winid)
     return true
 end
 

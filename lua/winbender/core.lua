@@ -4,26 +4,30 @@ local state        = require("winbender.state")
 local utils        = require("winbender.utils")
 local quick_access = require("winbender.quick_access")
 local compat       = require("winbender.compat")
+local options      = require("winbender.config").options
+
+local function get_border_size(win_config)
+    local border = win_config.border
+    local width = 0
+    local height = 0
+    if border then
+        if type(border) == "string" then
+            width = 2
+            height = 2
+        elseif type(border) == "table" then
+            height = height + ((border[2] ~= "" and 1) or 0)
+            height = height + ((border[6] ~= "" and 1) or 0)
+            width  = width  + ((border[4] ~= "" and 1) or 0)
+            width  = width  + ((border[8] ~= "" and 1) or 0)
+        end
+    end
+    return width, height
+end
 
 local function get_win_size(win_config)
     local width = win_config.width
     local height = win_config.height
-    local border = win_config.border
-    local border_width = 0
-    local border_height = 0
-
-    if border then
-        if type(border) == "string" then
-            border_width = 2
-            border_height = 2
-        elseif type(border) == "table" then
-            border_height = border_height + ((border[2] ~= "" and 1) or 0)
-            border_height = border_height + ((border[6] ~= "" and 1) or 0)
-            border_width  = border_width  + ((border[4] ~= "" and 1) or 0)
-            border_width  = border_width  + ((border[8] ~= "" and 1) or 0)
-        end
-    end
-
+    local border_width, border_height = get_border_size(win_config)
     return width + border_width, height + border_height
 end
 
@@ -66,6 +70,7 @@ function M.get_current_floating_window()
     end
 end
 
+-- x,y is a cartesian coordinate system with y reflected and origin at top-left
 function M.reposition_floating_window(winid, x_delta, y_delta)
     local win_config = compat.nvim_win_get_config(winid)
     win_config.col = win_config.col + x_delta
@@ -81,6 +86,18 @@ function M.resize_floating_window(winid, x_delta, y_delta)
     y_delta = math.min(y_delta, height_bound)
     win_config.height = math.max(win_config.height + y_delta, 1)
     win_config.width = math.max(win_config.width + x_delta, 1)
+    compat.nvim_win_set_config(winid, win_config)
+end
+
+function M.make_square_floating_window(winid)
+    local win_config = compat.nvim_win_get_config(winid)
+    local ratio = options.cell_pixel_ratio_w_to_h
+    local width, height = win_config.width, win_config.height
+    local border_width, border_height = get_border_size(win_config)
+
+    local min_dim = math.min(width + border_width, (height + border_height)/ratio)
+    win_config.width  = utils.math_round(min_dim - border_width)
+    win_config.height = utils.math_round(min_dim*ratio - border_height)
     compat.nvim_win_set_config(winid, win_config)
 end
 
