@@ -144,6 +144,35 @@ Reset~
 u               Reset window to its original configuration (position, size,
                 and anchor as they were when WinBender mode was activated)
 
+Snap (Experimental)~
+                                               *winbender-keymap-snap*
+                                               *winbender-experimental-snap*
+
+WinBender includes an experimental snap feature that allows windows to be
+quickly snapped to screen edges. This feature is disabled by default and must
+be explicitly enabled via keymaps configuration in |winbender.setup()|.
+
+Warning: The snap feature is experimental. How it interacts with repositioning
+is expected to change in future versions.
+
+When enabled, the following keymaps become available:
+    snap_left       Snap window to the left edge of the screen
+    snap_down       Snap window to the bottom edge of the screen
+    snap_up         Snap window to the top edge of the screen
+    snap_right      Snap window to the right edge of the screen
+
+Example configuration to enable snap keymaps:
+>lua
+    require("winbender").setup{
+      keymaps = {
+        snap_left  = "gh",
+        snap_down  = "gj",
+        snap_up    = "gk",
+        snap_right = "gl"
+      }
+    }
+<
+
 Quick Access~
                                                *winbender-keymap-quick-access*
 g1 - g9         Jump directly to floating window 1-9
@@ -204,6 +233,12 @@ Configure WinBender by calling the setup function. Default configuration:
         anchor_NE = 'w',
         anchor_SW = 'a',
         anchor_SE = 's',
+        
+        -- Experimental snap feature (disabled by default)
+        -- snap_left  = nil,
+        -- snap_down  = nil,
+        -- snap_up    = nil,
+        -- snap_right = nil,
       },
       step_size = {
         position = 5,
@@ -241,6 +276,11 @@ keymaps                                              *winbender-config-keymaps*
     A table of keymap definitions for WinBender mode operations. Each key
     corresponds to an action (e.g., focus_next, shift_left) and its value
     is the key sequence to trigger that action.
+    
+    Note: The snap keymaps (snap_left, snap_down, snap_up, snap_right) are
+    experimental and disabled by default (set to nil). See 
+    |winbender-experimental-snap| for details. These must be explicitly 
+    configured to be enabled.
 
 step_size                                          *winbender-config-step_size*
     Type: `table`
