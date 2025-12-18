@@ -1,7 +1,7 @@
 local M = {}
 
-local core         = require("winbender.core")
 local state        = require("winbender.state")
+local core         = require("winbender.core")
 local quick_access = require("winbender.quick_access")
 local options      = require("winbender.config").options
 

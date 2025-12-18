@@ -196,21 +196,6 @@ function M.init_floating_windows()
     end
 end
 
-local function win_midpoint(winid)
-    local win_config = compat.nvim_win_get_config(winid)
-    if not win_config.relative or win_config.relative == "" then
-        local midpoint = vim.api.nvim_win_get_position(winid)
-        local row, col = midpoint[1], midpoint[2]
-        return {row + win_config.height/2, col + win_config.width/2}
-    end
-
-    local width, height = get_win_size(win_config)
-    local anchor = win_config.anchor
-    local row = win_config.row + (anchor:sub(1,1) == 'N' and height/2 or -height/2)
-    local col = win_config.col + (anchor:sub(2,2) == 'W' and width/2 or -width/2)
-    return {row, col}
-end
-
 local function docked_window_list()
     local docked_wins = {}
     local wins = vim.api.nvim_tabpage_list_wins(0)
@@ -223,36 +208,48 @@ local function docked_window_list()
     return docked_wins
 end
 
-local function find_closest_docked_window(winid)
-    local docked_wins = {}
-    for _, id in ipairs(docked_window_list()) do
-        local midpoint = win_midpoint(id)
-        table.insert(docked_wins, {winid = id, midpoint = midpoint})
-    end
-    local x = { midpoint = win_midpoint(winid) }
-    local closest = utils.math_nearest_neighbor(x, docked_wins, function(a, b)
-        return utils.math_lp_norm(a.midpoint, b.midpoint, 1)
-    end)
-
-    return closest
+local function win_midpoint(winid)
+    local top_left_pos = vim.api.nvim_win_get_position(winid)
+    local width, height = get_win_size(compat.nvim_win_get_config(winid))
+    local row, col = top_left_pos[1], top_left_pos[2]
+    return {row + height/2, col + width/2}
 end
 
-local function orientation_new_docked_window(float_winid, docked_winid)
+function win_to_box(winid)
+    local win_config = compat.nvim_win_get_config(winid)
+    local coord = vim.api.nvim_win_get_position(winid)
+    local width, height = get_win_size(win_config)
+    return { x = coord[2], y = coord[1], dx = width, dy = height }
+end
+
+local function win_similarity(winid1, winid2)
+    local box1 = win_to_box(winid1)
+    local box2 = win_to_box(winid2)
+
+    -- similarity based on intersection, normalized by box1
+    local box1_area = box1.dx * box1.dy
+    return 1 - utils.math_area_box_intersection(box1, box2) / box1_area
+end
+
+local function find_closest_docked_window(winid)
+    local docked_wins = docked_window_list()
+    return utils.math_nearest_neighbor(winid, docked_wins, win_similarity)
+end
+
+local function orientation_new_docked_window(winid_float, winid_docked)
     -- Determine orientation based on relative position of midpoints
-    -- set the origin to the docked window midpoint and partition the plane with
-    -- y = x and y = -x lines. If the floating window midpoint lies in the
-    -- upper/lower quadrants, dock horizontally, else dock vertically.
+    -- set the origin to the docked window midpoint and partition docked window
+    -- by its diagonals
+    local midpoint_float  = win_midpoint(winid_float)
+    local midpoint_docked = win_midpoint(winid_docked)
+    local width, height = get_win_size(compat.nvim_win_get_config(winid_docked))
+    local slope = height / width
 
-    local float_midpoint = win_midpoint(float_winid)
-    docked_midpoint = win_midpoint(docked_winid)
+    local x = midpoint_float[2] - midpoint_docked[2]
+    local y = midpoint_float[1] - midpoint_docked[1]
+    y = -y -- reflect y for cartesian coordinate system
 
-    local x = float_midpoint[2] - docked_midpoint[2]
-    local y = float_midpoint[1] - docked_midpoint[1]
-    local y = -y -- reflect y for cartesian coordinate system
-    local y = y/options.cell_pixel_ratio_w_to_h -- scale y for pixel aspect ratio
-    print(string.format("%.2f,%.2f", x, y))
-
-    if (y - x) * (y + x) > 0 then
+    if (y - slope*x) * (y + slope*x) > 0 then
         return 'horizontal'
     else
         return 'vertical'
@@ -276,26 +273,27 @@ end
 
 function M.dock_floating_window(winid)
     local closest = find_closest_docked_window(winid)
-    local float_midpoint = win_midpoint(winid)
+
+    local midpoint_float = win_midpoint(winid)
+    local midpoint_closest = win_midpoint(closest)
 
     local bufnr = vim.api.nvim_win_get_buf(winid)
     local width, height = get_win_size(compat.nvim_win_get_config(winid))
     local new_config = {
         width = width,
         height = height,
-        win = closest.winid
+        win = closest
     }
-    if orientation_new_docked_window(winid, closest.winid) == 'horizontal' then
-        new_config.split = float_midpoint[1] < closest.midpoint[1] and "above" or "below"
+    if orientation_new_docked_window(winid, closest) == 'horizontal' then
+        new_config.split = midpoint_float[1] < midpoint_closest[1] and "above" or "below"
     else
-        new_config.split = float_midpoint[2] < closest.midpoint[2] and "left" or "right"
+        new_config.split = midpoint_float[2] < midpoint_closest[2] and "left" or "right"
         new_config.vertical = true
     end
     local new_winid = vim.api.nvim_open_win(bufnr, false, new_config)
     copy_win_options(winid, new_winid)
     M.focus_window(M.find_next_floating_window('forward'))
     vim.api.nvim_win_close(winid, false)
-    return
 end
 
 function M.display_info(winid)
@@ -309,17 +307,14 @@ function M.display_info(winid)
     local label = ""
     -- label = "[" .. winid .. "]"
 
-    local closest = find_closest_docked_window(winid)
-    local orientation = orientation_new_docked_window(winid, closest.winid)
-    label = "[" .. closest.winid .. "]"
-    label = label .. "[" .. orientation .. "]"
-
-
+    local winid_closest = find_closest_docked_window(winid)
+    local orientation = orientation_new_docked_window(winid, winid_closest)
+    label = "[" .. winid_closest .. "]"
+    label = label .. "[" .. orientation:sub(1,1) .. "]"
     -- label = label .. "[" .. win_config.anchor .. "]"
-    -- label = label .. "(" .. win_config.row .. "," .. win_config.col .. ")"
+    label = label .. "(" .. win_config.row .. "," .. win_config.col .. ")"
     win_config.footer = utils.prepend_label(footer, label)
     compat.nvim_win_set_config(winid, win_config)
 end
-
 
 return M
