@@ -98,6 +98,14 @@ local function snap_dir(args)
     resize_dir({dir = d.dir2, step = d.step}, 0)
 end
 
+local function dock_window(args)
+    local winid = core.get_current_floating_window()
+    if not winid then
+        return
+    end
+    core.dock_floating_window(winid)
+end
+
 local function get_maps()
     local keys = options.keymaps
     local p_sz = options.step_size.position
@@ -136,6 +144,8 @@ local function get_maps()
         anchor_NE = { map = keys.anchor_NE, func = update_anchor,  args = {anchor = 'NE'} },
         anchor_SW = { map = keys.anchor_SW, func = update_anchor,  args = {anchor = 'SW'} },
         anchor_SE = { map = keys.anchor_SE, func = update_anchor,  args = {anchor = 'SE'} },
+
+        dock_window  = { map = keys.dock_window,  func = dock_window, args = {} },
     }
     return maps
 end
