@@ -284,7 +284,14 @@ function M.dock_floating_window(winid)
         height = height,
         win = closest
     }
-    if orientation_new_docked_window(winid, closest) == 'horizontal' then
+    local type_as_floating = (width*options.cell_pixel_ratio_w_to_h > height) and 'horizontal' or 'vertical'
+    local type_as_docked = orientation_new_docked_window(winid, closest)
+    if type_as_floating ~= type_as_docked then
+        -- reflect window across diagonal
+        new_config.width = utils.math_round(height/options.cell_pixel_ratio_w_to_h)
+        new_config.height = utils.math_round(width*options.cell_pixel_ratio_w_to_h)
+    end
+    if type_as_docked == 'horizontal' then
         new_config.split = midpoint_float[1] < midpoint_closest[1] and "above" or "below"
     else
         new_config.split = midpoint_float[2] < midpoint_closest[2] and "left" or "right"
