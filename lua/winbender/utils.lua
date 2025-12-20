@@ -60,7 +60,7 @@ function M.math_nearest_neighbor(value, array, metric)
 
     if not metric then
         if type(value) == "table" then
-            metric = function(a, b) return lp_norm(a, b, 2) end
+            metric = function(a, b) return M.math_lp_norm(a, b, 2) end
         else
             metric = function(a, b) return math.abs(a - b) end
         end
@@ -89,12 +89,12 @@ function M.math_area_box_intersection(box1, box2)
     local x1_right = box1.x + box1.dx
     local y1_top = box1.y
     local y1_bottom = box1.y + box1.dy
-    
+
     local x2_left = box2.x
     local x2_right = box2.x + box2.dx
     local y2_top = box2.y
     local y2_bottom = box2.y + box2.dy
-    
+
     local overlap_left = math.max(x1_left, x2_left)
     local overlap_right = math.min(x1_right, x2_right)
     local overlap_width = overlap_right - overlap_left
@@ -102,11 +102,11 @@ function M.math_area_box_intersection(box1, box2)
     local overlap_top = math.max(y1_top, y2_top)
     local overlap_bottom = math.min(y1_bottom, y2_bottom)
     local overlap_height = overlap_bottom - overlap_top
-    
+
     if overlap_width <= 0 or overlap_height <= 0 then
         return 0
     end
-    
+
     return overlap_width * overlap_height
 end
 

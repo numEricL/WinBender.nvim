@@ -128,7 +128,6 @@ function M.find_next_floating_window(dir, count)
         local idx = dir == 'forward' and (cur_idx + i) or (cur_idx - i)
         idx = wrap_index(idx, #wins)
         local winid = wins[idx]
-        local win_config = compat.nvim_win_get_config(winid)
         if state.validate_floating_window(winid, silent) then
             counter = counter + 1
             if counter == count1 then
@@ -215,7 +214,7 @@ local function win_midpoint(winid)
     return {row + height/2, col + width/2}
 end
 
-function win_to_box(winid)
+local function win_to_box(winid)
     local win_config = compat.nvim_win_get_config(winid)
     local coord = vim.api.nvim_win_get_position(winid)
     local width, height = get_win_size(win_config)

@@ -1,6 +1,5 @@
 local M = {}
 
-local utils  = require("winbender.utils")
 local compat = require("winbender.compat")
 
 local init_winid = nil

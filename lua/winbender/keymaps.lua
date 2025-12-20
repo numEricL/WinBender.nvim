@@ -15,6 +15,7 @@ local function focus_next(args, count)
     core.focus_window(winid)
 end
 
+---@diagnostic disable-next-line: unused-local
 local function reset_window(args)
     local winid = core.get_current_floating_window()
     if not winid then
@@ -98,6 +99,7 @@ local function snap_dir(args)
     resize_dir({dir = d.dir2, step = d.step}, 0)
 end
 
+---@diagnostic disable-next-line: unused-local
 local function dock_window(args)
     local winid = core.get_current_floating_window()
     if not winid then
@@ -183,7 +185,7 @@ function M.set_maps()
 end
 
 function M.save()
-    for action, mapping in pairs(get_maps()) do
+    for _, mapping in pairs(get_maps()) do
         local rhs = vim.fn.maparg(mapping.map, 'n', 0, 1)
         if not vim.tbl_isempty(rhs) then
             table.insert(keymaps, rhs)

@@ -2,7 +2,6 @@ local M = {}
 
 local core   = require("winbender.core")
 local state  = require("winbender.state")
-local utils  = require("winbender.utils")
 local compat = require("winbender.compat")
 
 local mouse_maps = {}
