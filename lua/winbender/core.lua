@@ -322,17 +322,6 @@ local function edge_match(edge1, edge2)
     return false
 end
 
-local function find_closest_edge_docked_window(winid, edge)
-    local candidates = {}
-    local docked_wins = docked_window_list()
-    for _, docked_winid in ipairs(docked_wins) do
-        if edge_match(edge, edge_check(docked_winid)) then
-            table.insert(candidates, docked_winid)
-        end
-    end
-    return utils.math_nearest_neighbor(winid, candidates, win_similarity)
-end
-
 local function find_closest_docked_window(winid)
     return utils.math_nearest_neighbor(winid, docked_window_list(), win_similarity)
 end
@@ -385,8 +374,7 @@ local function pixel_orientation(win_config)
     return (win_size.width*options.cell_pixel_ratio_w_to_h > win_size.height) and 'horizontal' or 'vertical'
 end
 
-local function make_relative_orientation_config(winid, new_orientation)
-    local current_orientation = pixel_orientation(compat.nvim_win_get_config(winid))
+local function make_relative_orientation_config(winid, current_orientation, new_orientation)
     local win_size = get_win_size(compat.nvim_win_get_config(winid))
 
     local win_config = {}
@@ -401,11 +389,64 @@ local function make_relative_orientation_config(winid, new_orientation)
     return win_config
 end
 
-function edge_dock_floating_window(winid, edge)
-    local closest = find_closest_edge_docked_window(winid, edge)
-    local docked_orientation = orientation_new_docked_window(winid, closest)
-    local new_config = make_relative_orientation_config(winid, docked_orientation)
-    new_config.win = closest
+local function count_truthy(tbl)
+    local count = 0
+    for _, v in pairs(tbl) do
+        if v then count = count + 1 end
+    end
+    return count
+end
+
+local function orientation_new_edge_docked_window(winid, edge)
+    local win_config = compat.nvim_win_get_config(winid)
+    if count_truthy(edge) == 1 then
+        if edge.top or edge.bottom then
+            return 'horizontal'
+        else
+            return 'vertical'
+        end
+    else
+        pixel_orientation(win_config)
+    end
+end
+
+local function edge_dock_floating_window(winid, edge)
+    local docked_orientation = orientation_new_edge_docked_window(winid, edge)
+    local current_orientation = pixel_orientation(compat.nvim_win_get_config(winid))
+    local new_config = make_relative_orientation_config(winid, current_orientation, docked_orientation)
+    new_config.win = -1
+
+    local count = count_truthy(edge)
+    if count == 1 then
+        if edge.top then
+            new_config.split = "above"
+        elseif edge.bottom then
+            new_config.split = "below"
+        elseif edge.left then
+            new_config.split = "left"
+        elseif edge.right then
+            new_config.split = "right"
+        end
+    elseif count == 2 then
+        if edge.top and edge.left then
+            new_config.split = (current_orientation == 'horizontal') and "above" or "left"
+        elseif edge.top and edge.right then
+            new_config.split = (current_orientation == 'horizontal') and "above" or "right"
+        elseif edge.bottom and edge.left then
+            new_config.split = (current_orientation == 'horizontal') and "below" or "left"
+        elseif edge.bottom and edge.right then
+            new_config.split = (current_orientation == 'horizontal') and "below" or "right"
+        elseif edge.left and edge.right then
+            -- shouldn't happen
+            new_config.split = (current_orientation == 'horizontal') and "above" or "left"
+        elseif edge.top and edge.bottom then
+            -- shouldn't happen
+            new_config.split = (current_orientation == 'horizontal') and "above" or "left"
+        end
+    else
+        -- shouldn't happen
+        new_config.split = (current_orientation == 'horizontal') and "above" or "left"
+    end
 
     local bufnr = vim.api.nvim_win_get_buf(winid)
     local new_winid = vim.api.nvim_open_win(bufnr, false, new_config)
@@ -416,15 +457,28 @@ function edge_dock_floating_window(winid, edge)
     M.focus_window(next_focus)
 end
 
+local function edge_or_corner(edge)
+    local count = count_truthy(edge)
+    if count == 0 then
+        return false
+    elseif count == 1 then
+        return true
+    elseif count == 2 then
+        return not ((edge.top and edge.bottom) or (edge.left and edge.right))
+    else
+        return false
+    end
+end
+
 function M.dock_floating_window(winid)
     local edge = edge_check(winid)
-    if utils.any(edge) then
+    if edge_or_corner(edge) then
         return edge_dock_floating_window(winid, edge)
     end
-
     local closest = find_closest_docked_window(winid)
+    local current_orientation = pixel_orientation(compat.nvim_win_get_config(winid))
     local docked_orientation = orientation_new_docked_window(winid, closest)
-    local new_config = make_relative_orientation_config(winid, docked_orientation)
+    local new_config = make_relative_orientation_config(winid, current_orientation, docked_orientation)
     new_config.win = closest
 
     local midpoint_float = win_midpoint(winid)
@@ -436,8 +490,6 @@ function M.dock_floating_window(winid)
     end
 
     local bufnr = vim.api.nvim_win_get_buf(winid)
-    print('closest: ' .. tostring(closest))
-    print(vim.inspect(new_config))
     local new_winid = vim.api.nvim_open_win(bufnr, false, new_config)
     copy_win_options(winid, new_winid)
     vim.api.nvim_win_close(winid, false)
