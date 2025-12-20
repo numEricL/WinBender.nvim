@@ -46,6 +46,24 @@ function M.validate_floating_window(winid, silent)
     return true
 end
 
+-- TODO: save state of docked windows to allow restoring later
+function M.validate_docked_window(winid, silent)
+    if not vim.api.nvim_win_is_valid(winid) then
+        if not silent then
+            vim.notify("WinBender: Window " .. winid .. " is not valid", vim.log.levels.WARN)
+        end
+        return false
+    end
+    local win_config = compat.nvim_win_get_config(winid)
+    if win_config.relative and win_config.relative ~= "" then
+        if not silent then
+            vim.notify("WinBender: Window " .. winid .. " is not a docked window", vim.log.levels.WARN)
+        end
+        return false
+    end
+    return true
+end
+
 function M.restore_config(winid)
     if win_configs[winid] == nil then
         return

@@ -26,14 +26,25 @@ local function reset_window(args)
     core.display_info(winid)
 end
 
-local function reposition(args, count)
-    local winid = core.get_current_floating_window()
+local function move_or_reposition(args, count)
+    local winid, type = core.get_current_window()
     if not winid then
         return
     end
-    local step = (count == 0) and args.step or count
-    core.reposition_floating_window(winid, step*args.x_delta, step*args.y_delta)
-    core.display_info(winid)
+    if type == 'floating' then
+        local step = (count == 0) and args.step or count
+        core.reposition_floating_window(winid, step*args.x_delta, step*args.y_delta)
+        core.display_info(winid)
+    else
+        local dir = (args.x_delta < 0) and 'h' or
+                    (args.x_delta > 0) and 'l' or
+                    (args.y_delta < 0) and 'k' or
+                    (args.y_delta > 0) and 'j' or nil
+        local count1 = math.max(1, count)
+        if dir then
+            vim.cmd('wincmd '   .. tostring(count1) .. dir)
+        end
+    end
 end
 
 local function update_anchor(args)
@@ -108,6 +119,15 @@ local function dock_window(args)
     core.dock_floating_window(winid)
 end
 
+---@diagnostic disable-next-line: unused-local
+local function float_window(args)
+    local winid = core.get_current_docked_window()
+    if not winid then
+        return
+    end
+    core.float_docked_window(winid)
+end
+
 local function get_maps()
     local keys = options.keymaps
     local p_sz = options.step_size.position
@@ -117,10 +137,10 @@ local function get_maps()
         focus_prev   = { map = keys.focus_prev,   func = focus_next,   args = {dir = 'backward'} },
         reset_window = { map = keys.reset_window, func = reset_window, args = {}                 },
 
-        shift_left  = { map = keys.shift_left,  func = reposition, args = {x_delta = -1, y_delta =  0, step = p_sz} },
-        shift_right = { map = keys.shift_right, func = reposition, args = {x_delta =  1, y_delta =  0, step = p_sz} },
-        shift_down  = { map = keys.shift_down,  func = reposition, args = {x_delta =  0, y_delta =  1, step = p_sz} },
-        shift_up    = { map = keys.shift_up,    func = reposition, args = {x_delta =  0, y_delta = -1, step = p_sz} },
+        move_left  = { map = keys.move_left,  func = move_or_reposition, args = {x_delta = -1, y_delta =  0, step = p_sz} },
+        move_right = { map = keys.move_right, func = move_or_reposition, args = {x_delta =  1, y_delta =  0, step = p_sz} },
+        move_down  = { map = keys.move_down,  func = move_or_reposition, args = {x_delta =  0, y_delta =  1, step = p_sz} },
+        move_up    = { map = keys.move_up,    func = move_or_reposition, args = {x_delta =  0, y_delta = -1, step = p_sz} },
 
         increase_left  = { map = keys.increase_left,  func = resize_dir, args = {dir = 'left',  step = s_sz} },
         increase_right = { map = keys.increase_right, func = resize_dir, args = {dir = 'right', step = s_sz} },
@@ -147,7 +167,8 @@ local function get_maps()
         anchor_SW = { map = keys.anchor_SW, func = update_anchor,  args = {anchor = 'SW'} },
         anchor_SE = { map = keys.anchor_SE, func = update_anchor,  args = {anchor = 'SE'} },
 
-        dock_window  = { map = keys.dock_window,  func = dock_window, args = {} },
+        dock_window  = { map = keys.dock_window,  func = dock_window,  args = {} },
+        float_window = { map = keys.float_window, func = float_window, args = {} },
     }
     return maps
 end

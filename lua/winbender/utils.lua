@@ -2,6 +2,16 @@ local M = {}
 
 local options = require("winbender.config").options
 
+function M.any(tbl, predicate)
+    predicate = predicate or function(v) return v end
+    for _, v in pairs(tbl) do
+        if predicate(v) then
+           return true
+        end
+    end
+    return false
+end
+
 function M.get_border_size(win_config)
     local border = win_config.border
     local width = 0

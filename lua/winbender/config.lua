@@ -10,10 +10,10 @@ local defaults = {
         focus_prev   = 'F',
         reset_window = 'u',
 
-        shift_left  = 'h',
-        shift_down  = 'j',
-        shift_up    = 'k',
-        shift_right = 'l',
+        move_left  = 'h',
+        move_down  = 'j',
+        move_up    = 'k',
+        move_right = 'l',
 
         increase_left  = 'H',
         increase_down  = 'J',
