@@ -24,6 +24,10 @@ function M.initial_winid()
     return init_winid
 end
 
+function M.has_config(winid)
+    return win_configs[winid] ~= nil
+end
+
 function M.get_config(winid)
     return win_configs[winid]
 end

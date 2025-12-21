@@ -7,7 +7,6 @@ local M = {}
 
 local state        = require("winbender.state")
 local utils        = require("winbender.utils")
-local quick_access = require("winbender.quick_access")
 local compat       = require("winbender.compat")
 local options      = require("winbender.config").options
 
@@ -42,7 +41,7 @@ end
 
 -- screen size is defined by where floating windows can be placed, it includes
 -- the tabline and statusline, but not the command line
-function get_screen_size()
+local function get_screen_size()
     local tabline_height = 0
     if vim.o.showtabline == 1 and #vim.api.nvim_list_tabpages() > 1 then
         tabline_height = 1
@@ -89,7 +88,7 @@ local function get_max_resize_deltas(win_config)
     return width_bound, height_bound
 end
 
-local function reposition_in_bounds(win_config)
+function M.reposition_in_bounds(win_config)
     win_config.row = math.max(win_config.row, get_pos_bound(win_config, 'N'))
     win_config.row = math.min(win_config.row, get_pos_bound(win_config, 'S'))
     win_config.col = math.max(win_config.col, get_pos_bound(win_config, 'W'))
@@ -130,7 +129,7 @@ function M.reposition_floating_window(winid, x_delta, y_delta)
     local win_config = compat.nvim_win_get_config(winid)
     win_config.col = win_config.col + x_delta
     win_config.row = win_config.row + y_delta
-    reposition_in_bounds(win_config)
+    M.reposition_in_bounds(win_config)
     compat.nvim_win_set_config(winid, win_config)
 end
 
@@ -241,19 +240,6 @@ function M.get_anchor(winid)
     return win_config.anchor
 end
 
-function M.init_floating_windows()
-    local silent = true
-    local wins = vim.api.nvim_tabpage_list_wins(0)
-    for _, winid in ipairs(wins) do
-        if state.validate_floating_window(winid, silent) then
-            local win_config = compat.nvim_win_get_config(winid)
-            reposition_in_bounds(win_config)
-            compat.nvim_win_set_config(winid, win_config)
-            M.display_info(winid)
-        end
-    end
-end
-
 local function docked_window_list()
     local docked_wins = {}
     local wins = vim.api.nvim_tabpage_list_wins(0)
@@ -322,11 +308,11 @@ local function edge_match(edge1, edge2)
     return false
 end
 
-local function find_closest_docked_window(winid)
+function M.find_closest_docked_window(winid)
     return utils.math_nearest_neighbor(winid, docked_window_list(), win_similarity)
 end
 
-local function orientation_new_docked_window(winid_float, winid_docked)
+function M.orientation_new_docked_window(winid_float, winid_docked)
     -- Determine orientation based on relative position of midpoints.
     -- Set the origin to the docked window midpoint, and partition the docked
     -- window by its diagonals.
@@ -475,9 +461,9 @@ function M.dock_floating_window(winid)
     -- if edge_or_corner(edge) then
     --     return edge_dock_floating_window(winid, edge)
     -- end
-    local closest = find_closest_docked_window(winid)
+    local closest = M.find_closest_docked_window(winid)
     local current_orientation = pixel_orientation(compat.nvim_win_get_config(winid))
-    local docked_orientation = orientation_new_docked_window(winid, closest)
+    local docked_orientation = M.orientation_new_docked_window(winid, closest)
     local new_config = make_relative_orientation_config(winid, current_orientation, docked_orientation)
     new_config.win = closest
 
@@ -514,27 +500,6 @@ function M.float_docked_window(winid)
     copy_win_options(winid, new_winid)
     M.focus_window(new_winid)
     vim.api.nvim_win_close(winid, false)
-end
-
-function M.display_info(winid)
-    local qa_index = quick_access.get_index(winid)
-    if qa_index then
-        quick_access.display(winid, qa_index)
-    end
-
-    local win_config = compat.nvim_win_get_config(winid)
-    local footer = state.get_config(winid) and state.get_config(winid).footer or ""
-    local label = ""
-    -- label = "[" .. winid .. "]"
-
-    local winid_closest = find_closest_docked_window(winid)
-    local orientation = orientation_new_docked_window(winid, winid_closest)
-    label = "[" .. winid_closest .. "]"
-    label = label .. "[" .. orientation:sub(1,1) .. "]"
-    label = label .. "[" .. win_config.anchor .. "]"
-    label = label .. "(" .. win_config.row .. "," .. win_config.col .. ")"
-    win_config.footer = utils.prepend_label(footer, label)
-    compat.nvim_win_set_config(winid, win_config)
 end
 
 return M
