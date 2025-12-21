@@ -375,18 +375,18 @@ local function pixel_orientation(win_config)
 end
 
 local function make_relative_orientation_config(winid, current_orientation, new_orientation)
-    local win_size = get_win_size(compat.nvim_win_get_config(winid))
+    local win_config = compat.nvim_win_get_config(winid)
 
-    local win_config = {}
+    local new_config = {}
     if current_orientation ~= new_orientation then
         -- reflect window across diagonal
-        win_config.width = utils.math_round(win_size.height/options.cell_pixel_ratio_w_to_h)
-        win_config.height = utils.math_round(win_size.width*options.cell_pixel_ratio_w_to_h)
+        new_config.width = utils.math_round(win_config.height/options.cell_pixel_ratio_w_to_h)
+        new_config.height = utils.math_round(win_config.width*options.cell_pixel_ratio_w_to_h)
     else
-        win_config.width = win_size.width
-        win_config.height = win_size.height
+        new_config.width = win_config.width
+        new_config.height = win_config.height
     end
-    return win_config
+    return new_config
 end
 
 local function count_truthy(tbl)
@@ -471,10 +471,10 @@ local function edge_or_corner(edge)
 end
 
 function M.dock_floating_window(winid)
-    local edge = edge_check(winid)
-    if edge_or_corner(edge) then
-        return edge_dock_floating_window(winid, edge)
-    end
+    -- local edge = edge_check(winid)
+    -- if edge_or_corner(edge) then
+    --     return edge_dock_floating_window(winid, edge)
+    -- end
     local closest = find_closest_docked_window(winid)
     local current_orientation = pixel_orientation(compat.nvim_win_get_config(winid))
     local docked_orientation = orientation_new_docked_window(winid, closest)
