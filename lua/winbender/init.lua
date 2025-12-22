@@ -18,13 +18,13 @@ local function enable()
         local silent = true
         local wins = vim.api.nvim_tabpage_list_wins(0)
         for _, _winid in ipairs(wins) do
+            display.win_labels(_winid)
             if state.validate_floating_window(_winid, silent) then
                 core.reposition_in_bounds(_winid)
-                display.win_labels(_winid)
             end
         end
 
-        core.focus_window(winid)
+        core.focus_window(winid, silent)
         keymaps.save()
         keymaps.set_maps()
     -- else
@@ -35,11 +35,13 @@ end
 local function disable()
     local state   = require("winbender.state")
     local core    = require("winbender.core")
+    local display      = require("winbender.display")
     local keymaps = require("winbender.keymaps")
 
+    keymaps.restore_maps()
+    display.clear_all_win_labels()
     core.focus_window(state.initial_winid())
     state.exit()
-    keymaps.restore_maps()
 end
 
 function M.toggle()

@@ -1,7 +1,5 @@
 local M = {}
 
-local options = require("winbender.config").options
-
 function M.any(tbl, predicate)
     predicate = predicate or function(v) return v end
     for _, v in pairs(tbl) do
@@ -18,19 +16,6 @@ function M.count_truthy(tbl)
         if v then count = count + 1 end
     end
     return count
-end
-
-function M.prepend_label(title, label)
-    if type(title) == "table" then
-        local new_title = vim.deepcopy(title)
-        table.insert(new_title, 1, {' '})
-        table.insert(new_title, 1, {label, options.quick_access_hl})
-        return new_title
-    elseif type(title) == "string" then
-        return { {label, options.quick_access_hl}, {' ' .. title} }
-    else
-        return { {label, options.quick_access_hl} }
-    end
 end
 
 function M.math_round(num)
