@@ -37,6 +37,12 @@ function M.get_all_configs()
 end
 
 function M.validate_floating_window(winid, silent)
+    if not winid then
+        if not silent then
+            vim.notify("WinBender: Window ID is nil", vim.log.levels.WARN)
+        end
+        return false
+    end
     if not vim.api.nvim_win_is_valid(winid) then
         if not silent then
             vim.notify("WinBender: Window " .. winid .. " is not valid", vim.log.levels.WARN)
@@ -55,6 +61,12 @@ function M.validate_floating_window(winid, silent)
 end
 
 function M.validate_docked_window(winid, silent)
+    if not winid then
+        if not silent then
+            vim.notify("WinBender: Window ID is nil", vim.log.levels.WARN)
+        end
+        return false
+    end
     if not vim.api.nvim_win_is_valid(winid) then
         if not silent then
             vim.notify("WinBender: Window " .. winid .. " is not valid", vim.log.levels.WARN)
@@ -73,6 +85,12 @@ function M.validate_docked_window(winid, silent)
 end
 
 function M.validate_window(winid, silent)
+    if not winid then
+        if not silent then
+            vim.notify("WinBender: Window ID is nil", vim.log.levels.WARN)
+        end
+        return false
+    end
     if not vim.api.nvim_win_is_valid(winid) then
         if not silent then
             vim.notify("WinBender: Window " .. winid .. " is not valid", vim.log.levels.WARN)
@@ -93,14 +111,15 @@ end
 function M.exit()
     init_winid = nil
     local silent = true
-    for winid, saved_config in pairs(win_configs) do
+    for winid, saved_cfg in pairs(win_configs) do
         if vim.api.nvim_win_is_valid(winid) then
-            local cfg = compat.nvim_win_get_config(winid)
             if M.validate_floating_window(winid, silent) then
-                cfg.title = saved_config.title or ""
-                cfg.footer = saved_config.footer or ""
+                local cfg  = {
+                    title = saved_cfg.title or "",
+                    footer = saved_cfg.footer or "",
+                }
+                compat.nvim_win_set_config(winid, cfg)
             end
-            compat.nvim_win_set_config(winid, cfg)
         end
     end
 end

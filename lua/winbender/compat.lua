@@ -6,7 +6,7 @@ local compat_has = {
     footer = nil,
 }
 
-function M.init()
+local function init()
     if initialized then
         return
     else
@@ -22,12 +22,12 @@ function M.init()
 end
 
 local function has_title()
-    M.init()
+    init()
     return compat_has.title
 end
 
 local function has_footer()
-    M.init()
+    init()
     return compat_has.footer
 end
 
@@ -42,9 +42,11 @@ end
 function M.nvim_win_set_config(winid, cfg)
     if not has_title() then
         cfg.title = nil
+        cfg.title_pos = nil
     end
     if not has_footer() then
         cfg.footer = nil
+        cfg.footer_pos = nil
     end
     vim.api.nvim_win_set_config(winid, cfg)
 end

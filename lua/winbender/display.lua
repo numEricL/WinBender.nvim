@@ -101,6 +101,10 @@ local function set_footer(winid, footer)
 end
 
 local function clear_virtual_text(winid)
+    local silent = true
+    if not state.validate_window(winid, silent) then
+        return
+    end
     local bufnr = vim.api.nvim_win_get_buf(winid)
     vim.api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
 end

@@ -129,8 +129,10 @@ function M.make_square_floating_window(winid)
     local border_width, border_height = win.get_border_size(cfg)
 
     local min_dim = math.min(width + border_width, (height + border_height)/ratio)
-    cfg.width  = utils.math_round(min_dim - border_width)
-    cfg.height = utils.math_round(min_dim*ratio - border_height)
+    width  = utils.math_round(min_dim - border_width)
+    height = utils.math_round(min_dim*ratio - border_height)
+    cfg.width = math.max(width, 1)
+    cfg.height = math.max(height, 1)
     compat.nvim_win_set_config(winid, cfg)
 end
 

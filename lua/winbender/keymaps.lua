@@ -121,6 +121,7 @@ local function dock_window(args)
         return
     end
     dock.dock_floating_window(winid)
+    display.win_labels(winid)
 end
 
 ---@diagnostic disable-next-line: unused-local
@@ -130,6 +131,7 @@ local function float_window(args)
         return
     end
     dock.float_docked_window(winid)
+    display.win_labels(winid)
 end
 
 local function get_maps()

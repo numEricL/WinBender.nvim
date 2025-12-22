@@ -1,8 +1,9 @@
 local M = {}
 
-local core   = require("winbender.core")
-local state  = require("winbender.state")
-local compat = require("winbender.compat")
+local compat  = require("winbender.compat")
+local core    = require("winbender.core")
+local display = require("winbender.display")
+local state   = require("winbender.state")
 
 local mouse_maps = {}
 
@@ -25,7 +26,6 @@ local function init_drag_floating_window()
     end
 
     local cfg = compat.nvim_win_get_config(winid)
-
     drag_state = {
         active = true,
         winid = winid,
@@ -37,6 +37,11 @@ local function init_drag_floating_window()
 end
 
 local function end_drag_floating_window()
+    local silent = true
+    if state.validate_floating_window(drag_state.winid, silent) then
+        core.reposition_in_bounds(drag_state.winid)
+        display.win_labels(drag_state.winid)
+    end
     drag_state = {
         active = false,
         winid = nil,
@@ -66,6 +71,7 @@ local function drag_floating_window()
     cfg.col = drag_state.start_win_col + col_delta
 
     compat.nvim_win_set_config(drag_state.winid, cfg)
+    display.win_labels(drag_state.winid)
 end
 
 local function left_mouse()

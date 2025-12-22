@@ -155,7 +155,23 @@ function M.dock_floating_window(winid)
     core.focus_window(next_focus)
 end
 
+local function count_docked_windows()
+    local count = 0
+    local wins = vim.api.nvim_tabpage_list_wins(0)
+    local silent = true
+    for _, winid in ipairs(wins) do
+        if state.validate_docked_window(winid, silent) then
+            count = count + 1
+        end
+    end
+    return count
+end
+
 function M.float_docked_window(winid)
+    if count_docked_windows() == 1 then
+        vim.notify("WinBender: Cannot float the last docked window", vim.log.levels.WARN)
+        return
+    end
     local bufnr = vim.api.nvim_win_get_buf(winid)
     local pos = vim.api.nvim_win_get_position(winid)
     local cfg = compat.nvim_win_get_config(winid)
@@ -265,7 +281,6 @@ return M
 -- end
 -- 
 -- local function is_corner(edge)
---     print("top: "..tostring(edge.top)..", left: "..tostring(edge.left)..", bottom: "..tostring(edge.bottom)..", right: "..tostring(edge.right))
 --     if count_truthy(edge) == 2 then
 --         return not ((edge.top and edge.bottom) or (edge.left and edge.right))
 --     end
