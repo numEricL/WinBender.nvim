@@ -10,7 +10,7 @@ local win     = require("winbender.win")
 local M = {}
 
 function M.focus_window(winid, silent)
-    if winid and vim.api.nvim_win_is_valid(winid) then
+    if state.validate_window(winid, silent) then
         vim.api.nvim_set_current_win(winid)
     elseif not silent then
         vim.notify("WinBender: Cannot focus invalid window " .. tostring(winid), vim.log.levels.WARN)
@@ -19,9 +19,10 @@ end
 
 function M.get_current_window()
     local cur_winid = vim.api.nvim_get_current_win()
-    if state.validate_floating_window(cur_winid) then
+    local silent = true
+    if state.validate_floating_window(cur_winid, silent) then
         return cur_winid, 'floating'
-    elseif state.validate_docked_window(cur_winid) then
+    elseif state.validate_docked_window(cur_winid, silent) then
         return cur_winid, 'docked'
     else
         return nil, nil
@@ -30,7 +31,8 @@ end
 
 function M.get_current_docked_window()
     local cur_winid = vim.api.nvim_get_current_win()
-    if state.validate_docked_window(cur_winid) then
+    local silent = true
+    if state.validate_docked_window(cur_winid, silent) then
         return cur_winid
     else
         return nil
@@ -39,7 +41,8 @@ end
 
 function M.get_current_floating_window()
     local cur_winid = vim.api.nvim_get_current_win()
-    if state.validate_floating_window(cur_winid) then
+    local silent = true
+    if state.validate_floating_window(cur_winid, silent) then
         return cur_winid
     else
         return nil

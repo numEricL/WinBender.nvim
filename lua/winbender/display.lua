@@ -109,13 +109,17 @@ local function clear_virtual_text(winid)
     vim.api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
 end
 
-function M.clear_all_win_labels()
+function M.clear_labels(winid)
+    clear_virtual_text(winid)
+end
+
+function M.clear_all_labels()
     for winid, _ in pairs(state.get_all_configs()) do
-        clear_virtual_text(winid)
+        M.clear_labels(winid)
     end
 end
 
-function M.win_labels(winid)
+function M.labels(winid)
     if not state.validate_window(winid) then
         return
     end
@@ -139,7 +143,7 @@ function M.win_labels(winid)
         footer = footer .. "(" .. cfg.row .. "," .. cfg.col .. ")"
     end
 
-    clear_virtual_text(winid)
+    M.clear_labels(winid)
     set_title(winid, title)
     set_footer(winid, footer)
 end

@@ -22,6 +22,10 @@ function M.math_round(num)
     return num >= 0 and math.floor(num + 0.5) or math.ceil(num - 0.5)
 end
 
+function M.math_clamp(num, min, max)
+    return math.min(math.max(num, min), max)
+end
+
 function M.math_lp_norm(a, b, p)
     local sum = 0
     for i = 1, #a do

@@ -28,15 +28,6 @@ local function win_similarity(winid1, winid2)
     return 1 - utils.math_area_box_intersection(box1, box2) / box1_area
 end
 
-function M.get_current_docked_window()
-    local cur_winid = vim.api.nvim_get_current_win()
-    if state.validate_docked_window(cur_winid) then
-        return cur_winid
-    else
-        return nil
-    end
-end
-
 local function get_edge_info(winid)
     local top_left_pos = vim.api.nvim_win_get_position(winid)
     local row = top_left_pos[1]
@@ -153,6 +144,7 @@ function M.dock_floating_window(winid)
     local next_focus = core.find_next_floating_window('forward')
     next_focus = next_focus or new_winid
     core.focus_window(next_focus)
+    return new_winid
 end
 
 local function count_docked_windows()
@@ -187,6 +179,7 @@ function M.float_docked_window(winid)
     win.copy_options(winid, new_winid)
     core.focus_window(new_winid)
     vim.api.nvim_win_close(winid, false)
+    return new_winid
 end
 
 return M

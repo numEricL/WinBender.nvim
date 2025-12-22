@@ -40,7 +40,7 @@ local function end_drag_floating_window()
     local silent = true
     if state.validate_floating_window(drag_state.winid, silent) then
         core.reposition_in_bounds(drag_state.winid)
-        display.win_labels(drag_state.winid)
+        display.labels(drag_state.winid)
     end
     drag_state = {
         active = false,
@@ -56,8 +56,8 @@ local function drag_floating_window()
     if not drag_state.active then
         return
     end
-
-    if not vim.api.nvim_win_is_valid(drag_state.winid) then
+    local silent = true
+    if not state.validate_window(drag_state.winid, silent) then
         end_drag_floating_window()
         return
     end
@@ -71,7 +71,7 @@ local function drag_floating_window()
     cfg.col = drag_state.start_win_col + col_delta
 
     compat.nvim_win_set_config(drag_state.winid, cfg)
-    display.win_labels(drag_state.winid)
+    display.labels(drag_state.winid)
 end
 
 local function left_mouse()

@@ -4,6 +4,7 @@ local core         = require("winbender.core")
 local compat       = require("winbender.compat")
 local display      = require("winbender.display")
 local dock         = require("winbender.dock")
+local highlight    = require("winbender.highlight")
 local mouse        = require("winbender.mouse")
 local options      = require("winbender.config").options
 local quick_access = require("winbender.quick_access")
@@ -27,7 +28,7 @@ local function reset_window(args)
     end
     state.restore_config(winid)
     core.reposition_floating_window(winid, 0, 0) -- for repositioning in bounds
-    display.win_labels(winid)
+    display.labels(winid)
 end
 
 local function move_or_reposition(args, count)
@@ -38,7 +39,7 @@ local function move_or_reposition(args, count)
     if type == 'floating' then
         local step = (count == 0) and args.step or count
         core.reposition_floating_window(winid, step*args.x_delta, step*args.y_delta)
-        display.win_labels(winid)
+        display.labels(winid)
     else
         local dir = (args.x_delta < 0) and 'h' or
                     (args.x_delta > 0) and 'l' or
@@ -57,7 +58,7 @@ local function update_anchor(args)
         return
     end
     core.update_anchor(winid, args.anchor)
-    display.win_labels(winid)
+    display.labels(winid)
 end
 
 local function resize(args, count)
@@ -67,7 +68,7 @@ local function resize(args, count)
     end
     local step = (count == 0) and args.step or count
     core.resize_floating_window(winid, step*args.x_delta, step*args.y_delta)
-    display.win_labels(winid)
+    display.labels(winid)
 end
 
 local function resize_dir(args, count)
@@ -90,7 +91,7 @@ local function resize_dir(args, count)
     core.update_anchor(winid, d.anchor)
     core.resize_floating_window(winid, step*d.dx, step*d.dy)
     core.update_anchor(winid, old_anchor)
-    display.win_labels(winid)
+    display.labels(winid)
 end
 
 local function snap_dir(args)
@@ -120,8 +121,10 @@ local function dock_window(args)
     if not winid then
         return
     end
-    dock.dock_floating_window(winid)
-    display.win_labels(winid)
+    display.clear_labels(winid)
+    highlight.restore(winid)
+    local new_winid = dock.dock_floating_window(winid)
+    display.labels(new_winid)
 end
 
 ---@diagnostic disable-next-line: unused-local
@@ -130,8 +133,10 @@ local function float_window(args)
     if not winid then
         return
     end
-    dock.float_docked_window(winid)
-    display.win_labels(winid)
+    display.clear_labels(winid)
+    highlight.restore(winid)
+    local new_winid = dock.float_docked_window(winid)
+    display.labels(new_winid)
 end
 
 local function get_maps()
