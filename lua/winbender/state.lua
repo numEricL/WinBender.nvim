@@ -39,8 +39,8 @@ function M.validate_floating_window(winid, silent)
         end
         return false
     end
-    local win_config = compat.nvim_win_get_config(winid)
-    if not win_config.relative or win_config.relative == "" then
+    local cfg = compat.nvim_win_get_config(winid)
+    if not cfg.relative or cfg.relative == "" then
         if not silent then
             vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.WARN)
         end
@@ -58,8 +58,8 @@ function M.validate_docked_window(winid, silent)
         end
         return false
     end
-    local win_config = compat.nvim_win_get_config(winid)
-    if win_config.relative and win_config.relative ~= "" then
+    local cfg = compat.nvim_win_get_config(winid)
+    if cfg.relative and cfg.relative ~= "" then
         if not silent then
             vim.notify("WinBender: Window " .. winid .. " is not a docked window", vim.log.levels.WARN)
         end
@@ -79,10 +79,10 @@ function M.exit()
     init_winid = nil
     for winid, saved_config in pairs(win_configs) do
         if vim.api.nvim_win_is_valid(winid) then
-            local win_config = compat.nvim_win_get_config(winid)
-            win_config.title = saved_config.title or ""
-            win_config.footer = saved_config.footer or ""
-            compat.nvim_win_set_config(winid, win_config)
+            local cfg = compat.nvim_win_get_config(winid)
+            cfg.title = saved_config.title or ""
+            cfg.footer = saved_config.footer or ""
+            compat.nvim_win_set_config(winid, cfg)
         end
     end
 end

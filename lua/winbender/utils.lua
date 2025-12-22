@@ -12,31 +12,13 @@ function M.any(tbl, predicate)
     return false
 end
 
-function M.get_border_size(win_config)
-    local border = win_config.border
-    local width = 0
-    local height = 0
-    if border then
-        if type(border) == "string" then
-            width = 2
-            height = 2
-        elseif type(border) == "table" then
-            height = height + ((border[2] ~= "" and 1) or 0)
-            height = height + ((border[6] ~= "" and 1) or 0)
-            width  = width  + ((border[4] ~= "" and 1) or 0)
-            width  = width  + ((border[8] ~= "" and 1) or 0)
-        end
+function M.count_truthy(tbl)
+    local count = 0
+    for _, v in pairs(tbl) do
+        if v then count = count + 1 end
     end
-    return width, height
+    return count
 end
-
-function M.get_win_size(win_config)
-    local width = win_config.width
-    local height = win_config.height
-    local border_width, border_height = M.get_border_size(win_config)
-    return width + border_width, height + border_height
-end
-
 
 function M.prepend_label(title, label)
     if type(title) == "table" then

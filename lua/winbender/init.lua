@@ -3,7 +3,6 @@ local M = {}
 local config  = require("winbender.config")
 
 local function enable()
-    local compat       = require("winbender.compat")
     local core         = require("winbender.core")
     local display      = require("winbender.display")
     local keymaps      = require("winbender.keymaps")
@@ -12,7 +11,7 @@ local function enable()
 
     local initial_winid = vim.api.nvim_get_current_win()
     local winid = core.find_floating_window('forward')
-    if winid then
+    -- if winid then
         state.init(initial_winid)
         quick_access.init()
 
@@ -20,9 +19,7 @@ local function enable()
         local wins = vim.api.nvim_tabpage_list_wins(0)
         for _, _winid in ipairs(wins) do
             if state.validate_floating_window(_winid, silent) then
-                local win_config = compat.nvim_win_get_config(_winid)
-                core.reposition_in_bounds(win_config)
-                compat.nvim_win_set_config(_winid, win_config)
+                core.reposition_in_bounds(_winid)
                 display.win_labels(_winid)
             end
         end
@@ -30,9 +27,9 @@ local function enable()
         core.focus_window(winid)
         keymaps.save()
         keymaps.set_maps()
-    else
-       vim.notify("WinBender: No floating windows found", vim.log.levels.INFO)
-    end
+    -- else
+    --    vim.notify("WinBender: No floating windows found", vim.log.levels.INFO)
+    -- end
 end
 
 local function disable()

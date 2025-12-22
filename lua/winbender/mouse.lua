@@ -24,37 +24,16 @@ local function init_drag_floating_window()
         return
     end
 
-    local win_config = compat.nvim_win_get_config(winid)
+    local cfg = compat.nvim_win_get_config(winid)
 
     drag_state = {
         active = true,
         winid = winid,
         start_mouse_row = mouse_pos.screenrow,
         start_mouse_col = mouse_pos.screencol,
-        start_win_row = win_config.row,
-        start_win_col = win_config.col,
+        start_win_row = cfg.row,
+        start_win_col = cfg.col,
     }
-end
-
-local function drag_floating_window()
-    if not drag_state.active then
-        return
-    end
-    
-    if not vim.api.nvim_win_is_valid(drag_state.winid) then
-        end_drag_floating_window()
-        return
-    end
-    
-    local mouse_pos = vim.fn.getmousepos()
-    local row_delta = mouse_pos.screenrow - drag_state.start_mouse_row
-    local col_delta = mouse_pos.screencol - drag_state.start_mouse_col
-    
-    local win_config = compat.nvim_win_get_config(drag_state.winid)
-    win_config.row = drag_state.start_win_row + row_delta
-    win_config.col = drag_state.start_win_col + col_delta
-    
-    compat.nvim_win_set_config(drag_state.winid, win_config)
 end
 
 local function end_drag_floating_window()
@@ -66,6 +45,27 @@ local function end_drag_floating_window()
         start_win_row = nil,
         start_win_col = nil,
     }
+end
+
+local function drag_floating_window()
+    if not drag_state.active then
+        return
+    end
+
+    if not vim.api.nvim_win_is_valid(drag_state.winid) then
+        end_drag_floating_window()
+        return
+    end
+
+    local mouse_pos = vim.fn.getmousepos()
+    local row_delta = mouse_pos.screenrow - drag_state.start_mouse_row
+    local col_delta = mouse_pos.screencol - drag_state.start_mouse_col
+
+    local cfg = compat.nvim_win_get_config(drag_state.winid)
+    cfg.row = drag_state.start_win_row + row_delta
+    cfg.col = drag_state.start_win_col + col_delta
+
+    compat.nvim_win_set_config(drag_state.winid, cfg)
 end
 
 local function left_mouse()

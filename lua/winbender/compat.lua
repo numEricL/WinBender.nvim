@@ -33,20 +33,20 @@ end
 
 -- neovim 0.7.2 returns a boolean table for row/col of floating windows
 function M.nvim_win_get_config(winid)
-    local win_config = vim.api.nvim_win_get_config(winid)
-    win_config.row = type(win_config.row) == "table" and win_config.row[false] or win_config.row
-    win_config.col = type(win_config.col) == "table" and win_config.col[false] or win_config.col
-    return win_config
+    local cfg = vim.api.nvim_win_get_config(winid)
+    cfg.row = type(cfg.row) == "table" and cfg.row[false] or cfg.row
+    cfg.col = type(cfg.col) == "table" and cfg.col[false] or cfg.col
+    return cfg
 end
 
-function M.nvim_win_set_config(winid, win_config)
+function M.nvim_win_set_config(winid, cfg)
     if not has_title() then
-        win_config.title = nil
+        cfg.title = nil
     end
     if not has_footer() then
-        win_config.footer = nil
+        cfg.footer = nil
     end
-    vim.api.nvim_win_set_config(winid, win_config)
+    vim.api.nvim_win_set_config(winid, cfg)
 end
 
 return M

@@ -1,7 +1,9 @@
 local M = {}
 
 local core         = require("winbender.core")
+local compat       = require("winbender.compat")
 local display      = require("winbender.display")
+local dock         = require("winbender.dock")
 local mouse        = require("winbender.mouse")
 local options      = require("winbender.config").options
 local quick_access = require("winbender.quick_access")
@@ -73,7 +75,7 @@ local function resize_dir(args, count)
     if not winid then
         return
     end
-    local old_anchor = core.get_anchor(winid)
+    local old_anchor = compat.nvim_win_get_config(winid).anchor
     local dir_map = {
         left = { anchor = old_anchor:sub(1,1) .. 'E', dx = 1, dy = 0 },
         right= { anchor = old_anchor:sub(1,1) .. 'W', dx = 1, dy = 0 },
@@ -118,7 +120,7 @@ local function dock_window(args)
     if not winid then
         return
     end
-    core.dock_floating_window(winid)
+    dock.dock_floating_window(winid)
 end
 
 ---@diagnostic disable-next-line: unused-local
@@ -127,7 +129,7 @@ local function float_window(args)
     if not winid then
         return
     end
-    core.float_docked_window(winid)
+    dock.float_docked_window(winid)
 end
 
 local function get_maps()
@@ -211,7 +213,7 @@ function M.set_maps()
     if options.mouse_enabled then
         mouse.set_maps()
     end
-    cyclops_integration()
+    -- cyclops_integration()
 end
 
 function M.save()
