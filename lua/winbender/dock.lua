@@ -36,7 +36,8 @@ local function get_edge_info(winid)
     local screen = win.get_screen_size()
     local top_offset = 0
     local bot_offset = 0
-    if state.validate_docked_window(winid) then
+    local silent = true
+    if state.validate_docked_window(winid, silent) then
         -- docked windows do not overlap tabline/statusline
         top_offset = screen.tabline
         bot_offset = screen.statusline

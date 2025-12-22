@@ -68,7 +68,7 @@ function M.validate_floating_window(winid, silent)
     local cfg = compat.nvim_win_get_config(winid)
     if not cfg.relative or cfg.relative == "" then
         if not silent then
-            vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.ERROR)
+            vim.notify("WinBender: Window " .. winid .. " is not a floating window", vim.log.levels.WARN)
         end
         return false
     end
