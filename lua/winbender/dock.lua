@@ -1,10 +1,10 @@
-local M = {}
+local compat = require("winbender.compat")
+local core   = require("winbender.core")
+local state  = require("winbender.state")
+local utils  = require("winbender.utils")
+local win    = require("winbender.win")
 
-local compat  = require("winbender.compat")
-local core    = require("winbender.core")
-local state   = require("winbender.state")
-local utils   = require("winbender.utils")
-local win     = require("winbender.win")
+local M = {}
 
 local function win_midpoint(winid)
     local top_left_pos = vim.api.nvim_win_get_position(winid)

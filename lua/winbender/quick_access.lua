@@ -1,6 +1,6 @@
 local M = {}
 
-local state  = require("winbender.state")
+local state = require("winbender.state")
 
 local indexed_winids = {}
 local reverse_lookup = {}

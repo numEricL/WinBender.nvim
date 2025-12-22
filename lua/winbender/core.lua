@@ -1,13 +1,13 @@
 -- TODO: screen size calculations may be wrong in some places due to
 -- tabline/statusline. Check places that use vim.o.lines and vim.o.cmdheight
 
-local M = {}
-
 local compat  = require("winbender.compat")
 local options = require("winbender.config").options
 local state   = require("winbender.state")
 local utils   = require("winbender.utils")
 local win     = require("winbender.win")
+
+local M = {}
 
 function M.focus_window(winid, silent)
     if winid and vim.api.nvim_win_is_valid(winid) then

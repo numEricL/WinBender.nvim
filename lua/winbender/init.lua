@@ -1,6 +1,6 @@
 local M = {}
 
-local config  = require("winbender.config")
+local config = require("winbender.config")
 
 local function enable()
     local core         = require("winbender.core")

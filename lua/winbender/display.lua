@@ -1,10 +1,10 @@
-local M = {}
-
 local compat       = require("winbender.compat")
 local dock         = require("winbender.dock")
 local options      = require("winbender.config").options
 local quick_access = require("winbender.quick_access")
 local state        = require("winbender.state")
+
+local M = {}
 
 local ns_id = vim.api.nvim_create_namespace("winbender_display")
 

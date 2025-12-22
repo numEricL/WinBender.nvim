@@ -1,7 +1,7 @@
+local M = {}
+
 local options = require("winbender.config").options
 local utils   = require("winbender.utils")
-
-local M = {}
 
 -- screen size is defined by where floating windows can be placed, it includes
 -- the tabline and statusline, but not the command line
