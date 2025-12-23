@@ -11,11 +11,15 @@ Manage Neovim windows - undock and manipulate as a floating window
 - **Quick access** - Jump directly to numbered floating windows (`g1`-`g9`)
 - **Mouse support** - Drag and drop floating windows with the mouse
 
+## Demo
+
+https://github.com/user-attachments/assets/1d6679b4-7e67-448e-8cb3-9b51213ef9d6
+
 ## Requirements
 
 - Tested on Neovim 0.11.5
 
-## BETA NOTICE
+## Beta Notice
 
 This plugin is currently in beta. While the core functionality is stable,
 some features are experimental and may undergo changes. Keymaps are not
