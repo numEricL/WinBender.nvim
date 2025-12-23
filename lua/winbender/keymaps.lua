@@ -132,6 +132,9 @@ local function dock_window(args)
     display.clear_labels(winid)
     highlight.restore(winid)
     local new_winid = dock.dock_floating_window(winid)
+    local next_focus = core.find_next_floating_window('forward')
+    next_focus = next_focus or new_winid
+    core.focus_window(next_focus)
     display.labels(new_winid)
 end
 
@@ -144,6 +147,7 @@ local function float_window(args)
     display.clear_labels(winid)
     highlight.restore(winid)
     local new_winid = dock.float_docked_window(winid)
+    core.focus_window(new_winid)
     display.labels(new_winid)
 end
 

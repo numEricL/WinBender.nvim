@@ -142,9 +142,6 @@ function M.dock_floating_window(winid)
     local new_winid = vim.api.nvim_open_win(bufnr, false, new_cfg)
     win.copy_options(winid, new_winid)
     vim.api.nvim_win_close(winid, false)
-    local next_focus = core.find_next_floating_window('forward')
-    next_focus = next_focus or new_winid
-    core.focus_window(next_focus)
     return new_winid
 end
 
@@ -178,7 +175,6 @@ function M.float_docked_window(winid)
     }
     local new_winid = vim.api.nvim_open_win(bufnr, false, new_config)
     win.copy_options(winid, new_winid)
-    core.focus_window(new_winid)
     vim.api.nvim_win_close(winid, false)
     return new_winid
 end
