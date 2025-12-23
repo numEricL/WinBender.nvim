@@ -6,9 +6,11 @@ local defaults = {
     quick_access_hl = 'WarningMsg',
     cell_pixel_ratio_w_to_h = 12/26,
     keymaps = {
-        focus_next   = 'f',
-        focus_prev   = 'F',
-        reset_window = 'u',
+        focus_next_float = 'f',
+        focus_prev_float = 'F',
+        focus_next_dock  = 'n',
+        focus_prev_dock  = 'N',
+        reset_window     = 'u',
 
         move_left  = 'h',
         move_down  = 'j',

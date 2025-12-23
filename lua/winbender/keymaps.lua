@@ -12,8 +12,16 @@ local state        = require("winbender.state")
 
 local keymaps = {}
 
-local function focus_next(args, count)
+local function focus_next_float(args, count)
     local winid = core.find_next_floating_window(args.dir, math.max(1, count))
+    if not winid then
+        return
+    end
+    core.focus_window(winid)
+end
+
+local function focus_next_dock(args, count)
+    local winid = core.find_next_docked_window(args.dir, math.max(1, count))
     if not winid then
         return
     end
@@ -144,9 +152,11 @@ local function get_maps()
     local p_sz = options.step_size.position
     local s_sz = options.step_size.size
     local maps = {
-        focus_next   = { map = keys.focus_next,   func = focus_next,   args = {dir = 'forward' } },
-        focus_prev   = { map = keys.focus_prev,   func = focus_next,   args = {dir = 'backward'} },
-        reset_window = { map = keys.reset_window, func = reset_window, args = {}                 },
+        focus_next_float = { map = keys.focus_next_float,   func = focus_next_float,   args = {dir = 'forward' } },
+        focus_prev_float = { map = keys.focus_prev_float,   func = focus_next_float,   args = {dir = 'backward'} },
+        focus_next_dock  = { map = keys.focus_next_dock,    func = focus_next_dock,    args = {dir = 'forward' } },
+        focus_prev_dock  = { map = keys.focus_prev_dock,    func = focus_next_dock,    args = {dir = 'backward'} },
+        reset_window     = { map = keys.reset_window, func = reset_window, args = {}                             },
 
         move_left  = { map = keys.move_left,  func = move_or_reposition, args = {x_delta = -1, y_delta =  0, step = p_sz} },
         move_right = { map = keys.move_right, func = move_or_reposition, args = {x_delta =  1, y_delta =  0, step = p_sz} },
@@ -195,7 +205,7 @@ end
 local function cyclops_integration()
     local keys = options.keymaps
     local cyclops_opts = options.cyclops_opts
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.focus_next, keys.focus_prev          }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.focus_next_float, keys.focus_prev_float          }, cyclops_opts })
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.move_right, keys.move_left           }, cyclops_opts })
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.move_up, keys.move_down              }, cyclops_opts })
     pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_left, keys.decrease_left    }, cyclops_opts })

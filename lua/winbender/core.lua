@@ -49,7 +49,7 @@ function M.get_current_floating_window()
     end
 end
 
-function M.find_next_floating_window(dir, count)
+local function find_next_window(dir, count, validate_fn)
     local count1 = count or 1
 
     local cur_winid = vim.api.nvim_get_current_win()
@@ -76,17 +76,25 @@ function M.find_next_floating_window(dir, count)
         local idx = dir == 'forward' and (cur_idx + i) or (cur_idx - i)
         idx = wrap_index(idx, #wins)
         local winid = wins[idx]
-        if state.validate_floating_window(winid, silent) then
+        if validate_fn(winid, silent) then
             counter = counter + 1
             if counter == count1 then
                 return winid
             end
         end
         if counter == 0 and i >= #wins then
-            return nil -- no floating windows found
+            return nil
         end
         i = i + 1
     end
+end
+
+function M.find_next_floating_window(dir, count)
+    return find_next_window(dir, count, state.validate_floating_window)
+end
+
+function M.find_next_docked_window(dir, count)
+    return find_next_window(dir, count, state.validate_docked_window)
 end
 
 -- checks the current window first, then other windows in descending order by winid
