@@ -97,6 +97,35 @@ local function adjust_color_cterm(color_num, factor)
     return color_num
 end
 
+local highlight_groups = {
+    "ColorColumn",
+    "CursorLine",
+    "CursorLineNr",
+    "EndOfBuffer",
+    "FoldColumn",
+    "LineNr",
+    "NonText",
+    "Normal",
+    "SignColumn",
+}
+
+local function adjust_highlight_group(group_name, factor)
+    local hl = compat.nvim_get_hl(0, { name = group_name })
+    if not hl.bg then
+        return nil
+    end
+
+    local adjusted_bg = {
+        gui = adjust_color_hex(string.format("#%06x", hl.bg), factor),
+        cterm = adjust_color_cterm(hl.ctermbg, factor),
+    }
+
+    return {
+        bg = adjusted_bg.gui,
+        ctermbg = adjusted_bg.cterm,
+    }
+end
+
 local function update_window_highlight(winid)
     local silent = true
     if not state.validate_window(winid, silent) then
@@ -106,16 +135,18 @@ local function update_window_highlight(winid)
     local is_focused = (winid == core.get_current_window())
 
     if is_focused then
-        local normal_hl = compat.nvim_get_hl(0, { name = "Normal" })
-        local normal_bg = {
-            gui = adjust_color_hex(string.format("#%06x", normal_hl.bg), highlight_factor),
-            cterm = adjust_color_cterm(normal_hl.ctermbg, highlight_factor),
-        }
-        vim.api.nvim_set_hl(0, "WinBenderFocusedNormal", {
-            bg = normal_bg.gui,
-            ctermbg = normal_bg.cterm,
-        })
-        vim.wo[winid].winhighlight = "Normal:WinBenderFocusedNormal"
+        local highlight_mappings = {}
+
+        for _, group_name in ipairs(highlight_groups) do
+            local adjusted_hl = adjust_highlight_group(group_name, highlight_factor)
+            if adjusted_hl then
+                local focused_group_name = "WinBenderFocused" .. group_name
+                vim.api.nvim_set_hl(0, focused_group_name, adjusted_hl)
+                table.insert(highlight_mappings, group_name .. ":" .. focused_group_name)
+            end
+        end
+
+        vim.wo[winid].winhighlight = table.concat(highlight_mappings, ",")
     else
         vim.wo[winid].winhighlight = state.get_highlight(winid)
     end
@@ -147,6 +178,14 @@ function M.enable()
             update_all_windows()
         end,
         desc = "WinBender: Update window highlights on focus change"
+    })
+    vim.api.nvim_create_autocmd({ "WinNew" }, {
+        group = augroup,
+        callback = function()
+            local new_winid = vim.api.nvim_get_current_win()
+            vim.wo[new_winid].winhighlight = ""
+        end,
+        desc = "WinBender: Don't highlight new windows"
     })
 end
 

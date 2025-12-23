@@ -29,7 +29,6 @@ function M.get_screen_size()
     return screen
 end
 
-
 function M.get_border_size(win_config)
     local border = win_config.border
     local width = 0
