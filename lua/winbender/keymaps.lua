@@ -209,15 +209,16 @@ end
 local function cyclops_integration()
     local keys = options.keymaps
     local cyclops_opts = options.cyclops_opts
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.focus_next_float, keys.focus_prev_float          }, cyclops_opts })
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.move_right, keys.move_left           }, cyclops_opts })
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.move_up, keys.move_down              }, cyclops_opts })
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_left, keys.decrease_left    }, cyclops_opts })
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_right, keys.decrease_right  }, cyclops_opts })
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_up, keys.decrease_up        }, cyclops_opts })
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_down, keys.decrease_down    }, cyclops_opts })
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_width, keys.decrease_width  }, cyclops_opts })
-    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_height, keys.decrease_height}, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.focus_next_float, keys.focus_prev_float }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.focus_next_dock, keys.focus_prev_dock   }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.move_right, keys.move_left              }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.move_up, keys.move_down                 }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_left, keys.decrease_left       }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_right, keys.decrease_right     }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_up, keys.decrease_up           }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_down, keys.decrease_down       }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_width, keys.decrease_width     }, cyclops_opts })
+    pcall(vim.api.nvim_call_function, "pair#SetMap", { "nmap", { keys.increase_height, keys.decrease_height   }, cyclops_opts })
 end
 
 function M.set_maps()
@@ -234,7 +235,7 @@ function M.set_maps()
     if options.mouse_enabled then
         mouse.set_maps()
     end
-    -- cyclops_integration()
+    cyclops_integration()
 end
 
 function M.save()
