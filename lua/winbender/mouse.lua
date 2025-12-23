@@ -1,14 +1,18 @@
 local M = {}
 
-local core   = require("winbender.core")
-local state  = require("winbender.state")
-local utils  = require("winbender.utils")
-local compat = require("winbender.compat")
+local compat    = require("winbender.compat")
+local core      = require("winbender.core")
+local display   = require("winbender.display")
+local dock      = require("winbender.dock")
+local highlight = require("winbender.highlight")
+local state     = require("winbender.state")
+local utils     = require("winbender.utils")
 
 local mouse_maps = {}
 
 local drag_state = {
     active = false,
+    type = nil,
     winid = nil,
     start_mouse_row = nil,
     start_mouse_col = nil,
@@ -16,51 +20,45 @@ local drag_state = {
     start_win_col = nil,
 }
 
-local function init_drag_floating_window()
+-- winid is used for re-initializing drag after floating a docked window
+local function init_drag_window(winid)
     local mouse_pos = vim.fn.getmousepos()
-    local winid = mouse_pos.winid
+    if not winid then
+        winid = mouse_pos.winid
+    end
 
+    local type
     local silent = true
-    if not state.validate_floating_window(winid, silent) then
+    if state.validate_floating_window(winid, silent) then
+        type = "floating"
+    elseif state.validate_docked_window(winid, silent) then
+        type = "docked"
+    else
         return
     end
 
-    local win_config = compat.nvim_win_get_config(winid)
 
+    local cfg = compat.nvim_win_get_config(winid)
     drag_state = {
         active = true,
+        type = type,
         winid = winid,
         start_mouse_row = mouse_pos.screenrow,
         start_mouse_col = mouse_pos.screencol,
-        start_win_row = win_config.row,
-        start_win_col = win_config.col,
+        start_win_row = cfg.row,
+        start_win_col = cfg.col,
     }
 end
 
-local function drag_floating_window()
-    if not drag_state.active then
-        return
+local function end_drag_window()
+    local silent = true
+    if state.validate_floating_window(drag_state.winid, silent) then
+        core.reposition_in_bounds(drag_state.winid)
+        display.labels(drag_state.winid)
     end
-    
-    if not vim.api.nvim_win_is_valid(drag_state.winid) then
-        end_drag_floating_window()
-        return
-    end
-    
-    local mouse_pos = vim.fn.getmousepos()
-    local row_delta = mouse_pos.screenrow - drag_state.start_mouse_row
-    local col_delta = mouse_pos.screencol - drag_state.start_mouse_col
-    
-    local win_config = compat.nvim_win_get_config(drag_state.winid)
-    win_config.row = drag_state.start_win_row + row_delta
-    win_config.col = drag_state.start_win_col + col_delta
-    
-    compat.nvim_win_set_config(drag_state.winid, win_config)
-end
-
-local function end_drag_floating_window()
     drag_state = {
         active = false,
+        type = nil,
         winid = nil,
         start_mouse_row = nil,
         start_mouse_col = nil,
@@ -69,17 +67,59 @@ local function end_drag_floating_window()
     }
 end
 
+local function mouse_moved()
+    local mouse_pos = vim.fn.getmousepos()
+    local start = { drag_state.start_mouse_row, drag_state.start_mouse_col }
+    local stop = { mouse_pos.screenrow, mouse_pos.screencol }
+    return utils.math_lp_norm(start, stop, 1) >= 3
+end
+
+local function drag_window()
+    if not drag_state.active then
+        return
+    end
+    local silent = true
+    if not state.validate_window(drag_state.winid, silent) then
+        end_drag_window()
+        return
+    end
+
+    if drag_state.type == "docked" then
+        if mouse_moved() then
+            local winid = drag_state.winid
+            display.clear_labels(winid)
+            highlight.restore(winid)
+            local new_winid = dock.float_docked_window(winid)
+            core.focus_window(new_winid)
+            init_drag_window(new_winid)
+        else
+            return
+        end
+    end
+
+    local mouse_pos = vim.fn.getmousepos()
+    local row_delta = mouse_pos.screenrow - drag_state.start_mouse_row
+    local col_delta = mouse_pos.screencol - drag_state.start_mouse_col
+
+    local cfg = compat.nvim_win_get_config(drag_state.winid)
+    cfg.row = drag_state.start_win_row + row_delta
+    cfg.col = drag_state.start_win_col + col_delta
+
+    compat.nvim_win_set_config(drag_state.winid, cfg)
+    display.labels(drag_state.winid)
+end
+
 local function left_mouse()
     local winid = vim.fn.getmousepos().winid
     local silent = true
     core.focus_window(winid, silent)
-    init_drag_floating_window()
+    init_drag_window()
 end
 
 function M.set_maps()
     vim.keymap.set('n', '<LeftMouse>',   left_mouse,               { desc = "WinBender: Start drag"  })
-    vim.keymap.set('n', '<LeftDrag>',    drag_floating_window,     { desc = "WinBender: Drag window" })
-    vim.keymap.set('n', '<LeftRelease>', end_drag_floating_window, { desc = "WinBender: End drag"    })
+    vim.keymap.set('n', '<LeftDrag>',    drag_window,     { desc = "WinBender: Drag window" })
+    vim.keymap.set('n', '<LeftRelease>', end_drag_window, { desc = "WinBender: End drag"    })
 
     vim.keymap.set('n', '<2-LeftMouse>', '<nop>', { desc = "WinBender: Disabled" })
     vim.keymap.set('n', '<3-LeftMouse>', '<nop>', { desc = "WinBender: Disabled" })

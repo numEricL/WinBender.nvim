@@ -1,44 +1,47 @@
 local M = {}
 
-local config  = require("winbender.config")
+local config = require("winbender.config")
 
 local function enable()
-    local state        = require("winbender.state")
-    local quick_access = require("winbender.quick_access")
     local core         = require("winbender.core")
+    local display      = require("winbender.display")
     local keymaps      = require("winbender.keymaps")
-    local mouse        = require("winbender.mouse")
+    local quick_access = require("winbender.quick_access")
+    local state        = require("winbender.state")
+    local highlight    = require("winbender.highlight")
 
     local initial_winid = vim.api.nvim_get_current_win()
     local winid = core.find_floating_window('forward')
-    if winid then
-        state.init(initial_winid)
-        core.init_floating_windows()
-        core.focus_window(winid)
-        quick_access.init()
-        keymaps.save()
-        keymaps.set_maps()
-        if config.options.mouse_enabled then
-            mouse.save()
-            mouse.set_maps()
+    state.init(initial_winid)
+    quick_access.init()
+
+    local silent = true
+    local wins = vim.api.nvim_tabpage_list_wins(0)
+    for _, _winid in ipairs(wins) do
+        display.labels(_winid)
+        if state.validate_floating_window(_winid, silent) then
+            core.reposition_in_bounds(_winid)
         end
-    else
-        vim.notify("WinBender: No floating windows found", vim.log.levels.INFO)
     end
+
+    core.focus_window(winid, silent)
+    keymaps.save()
+    keymaps.set_maps()
+    highlight.enable()
 end
 
 local function disable()
-    local state   = require("winbender.state")
-    local core    = require("winbender.core")
-    local keymaps = require("winbender.keymaps")
-    local mouse   = require("winbender.mouse")
+    local state     = require("winbender.state")
+    local core      = require("winbender.core")
+    local display   = require("winbender.display")
+    local keymaps   = require("winbender.keymaps")
+    local highlight = require("winbender.highlight")
 
+    highlight.disable()
+    keymaps.restore_maps()
+    display.clear_all_labels()
     core.focus_window(state.initial_winid())
     state.exit()
-    keymaps.restore_maps()
-    if config.options.mouse_enabled then
-        mouse.restore_maps()
-    end
 end
 
 function M.toggle()

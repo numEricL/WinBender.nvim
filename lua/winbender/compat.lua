@@ -1,3 +1,4 @@
+-- compatibility for nvim 0.7.2 is a WIP
 local M = {}
 
 local initialized = false
@@ -6,7 +7,7 @@ local compat_has = {
     footer = nil,
 }
 
-function M.init()
+local function init()
     if initialized then
         return
     else
@@ -22,31 +23,52 @@ function M.init()
 end
 
 local function has_title()
-    M.init()
+    init()
     return compat_has.title
 end
 
 local function has_footer()
-    M.init()
+    init()
     return compat_has.footer
 end
 
 -- neovim 0.7.2 returns a boolean table for row/col of floating windows
 function M.nvim_win_get_config(winid)
-    local win_config = vim.api.nvim_win_get_config(winid)
-    win_config.row = type(win_config.row) == "table" and win_config.row[false] or win_config.row
-    win_config.col = type(win_config.col) == "table" and win_config.col[false] or win_config.col
-    return win_config
+    local cfg = vim.api.nvim_win_get_config(winid)
+    cfg.row = type(cfg.row) == "table" and cfg.row[false] or cfg.row
+    cfg.col = type(cfg.col) == "table" and cfg.col[false] or cfg.col
+    return cfg
 end
 
-function M.nvim_win_set_config(winid, win_config)
+function M.nvim_win_set_config(winid, cfg)
     if not has_title() then
-        win_config.title = nil
+        cfg.title = nil
+        cfg.title_pos = nil
     end
     if not has_footer() then
-        win_config.footer = nil
+        cfg.footer = nil
+        cfg.footer_pos = nil
     end
-    vim.api.nvim_win_set_config(winid, win_config)
+    vim.api.nvim_win_set_config(winid, cfg)
+end
+
+-- neovim 0.7.2 compat
+function M.nvim_get_hl(ns_id, opts)
+    local ok, result = pcall(vim.api.nvim_get_hl, ns_id, opts)
+    if ok then
+        return result
+    else
+        if opts.name then
+            local cterm_hl = vim.api.nvim_get_hl_by_name(opts.name, false)
+            local gui_hl = vim.api.nvim_get_hl_by_name(opts.name, true)
+            return { 
+                bg = gui_hl.background,
+                fg = gui_hl.foreground,
+                ctermbg = cterm_hl.background,
+                ctermfg = cterm_hl.foreground,
+            }
+        end
+    end
 end
 
 return M
