@@ -13,7 +13,7 @@ Manage Neovim windows - undock and manipulate as a floating window
 
 ## Demo
 
-https://github.com/user-attachments/assets/1d6679b4-7e67-448e-8cb3-9b51213ef9d6
+https://github.com/user-attachments/assets/93d59b0d-843d-4c80-8936-f3769903a5be
 
 ## Requirements
 
