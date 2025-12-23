@@ -124,9 +124,9 @@ function M.dock_floating_window(winid)
         local current_orientation = win.pixel_orientation(compat.nvim_win_get_config(winid))
         local docked_orientation = M.orientation_new_docked_window(winid, closest)
 
-        if current_orientation ~= docked_orientation then
-            win.pixel_transpose(new_cfg)
-        end
+        -- if current_orientation ~= docked_orientation then
+        --     win.pixel_transpose(new_cfg)
+        -- end
         new_cfg.win = closest
 
         local midpoint_float = win_midpoint(winid)
