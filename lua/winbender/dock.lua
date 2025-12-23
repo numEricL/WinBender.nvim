@@ -160,7 +160,7 @@ end
 function M.float_docked_window(winid)
     if count_docked_windows() == 1 then
         vim.notify("WinBender: Cannot float the last docked window", vim.log.levels.WARN)
-        return
+        return nil
     end
     local bufnr = vim.api.nvim_win_get_buf(winid)
     local pos = vim.api.nvim_win_get_position(winid)

@@ -58,14 +58,16 @@ function M.nvim_get_hl(ns_id, opts)
     if ok then
         return result
     else
-        local cterm_hl = vim.api.nvim_get_hl_by_name('normal', false)
-        local gui_hl = vim.api.nvim_get_hl_by_name('normal', true)
-        return { 
-            bg = gui_hl.background,
-            fg = gui_hl.foreground,
-            ctermbg = cterm_hl.background,
-            ctermfg = cterm_hl.foreground,
-        }
+        if opts.name then
+            local cterm_hl = vim.api.nvim_get_hl_by_name(opts.name, false)
+            local gui_hl = vim.api.nvim_get_hl_by_name(opts.name, true)
+            return { 
+                bg = gui_hl.background,
+                fg = gui_hl.foreground,
+                ctermbg = cterm_hl.background,
+                ctermfg = cterm_hl.foreground,
+            }
+        end
     end
 end
 
