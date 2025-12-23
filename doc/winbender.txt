@@ -1,4 +1,4 @@
-*winbender.txt*  Manipulate floating windows with keybindings
+*winbender.txt*  Manage Neovim windows - undock and manipulate as floating
 
 Author:  Eric Larson
 License: Mozilla Public License Version 2.0
@@ -8,83 +8,100 @@ CONTENTS                                                  *winbender-contents*
 
     1. Introduction ............................ |winbender-introduction|
     2. Requirements ............................ |winbender-requirements|
-    3. Usage ................................... |winbender-usage|
-    4. Commands ................................ |winbender-commands|
-    5. Keymaps ................................. |winbender-keymaps|
-    6. Mouse Controls .......................... |winbender-mouse|
-    7. Configuration ........................... |winbender-configuration|
-    8. Integration ............................. |winbender-integration|
+    3. Beta Notice ............................. |winbender-beta|
+    4. Usage ................................... |winbender-usage|
+    5. Commands ................................ |winbender-commands|
+    6. Keymaps ................................. |winbender-keymaps|
+    7. Features ................................ |winbender-features|
+    8. Configuration ........................... |winbender-configuration|
+    9. Integration ............................. |winbender-integration|
 
 ==============================================================================
 1. INTRODUCTION                                       *winbender-introduction*
 
-WinBender is a Neovim plugin for manipulating floating windows. It provides
-a modal interface for moving, resizing, and repositioning floating windows
-using intuitive keybindings and mouse controls.
+WinBender is a modal window management plugin for Neovim. Convert docked 
+windows to floating windows and back again, then move, resize, and reposition 
+them with intuitive keybindings.
+
+Features:
+  - Interactive - Convert between docked and floating windows
+  - Modal Keymaps - Only active when WinBender mode is toggled
+  - Visual feedback - Move, resize, and reposition floating windows
+  - Smart anchor handling - Resize by direction, not by anchor
+  - Quick access - Jump directly to numbered floating windows (g1-g9)
+  - Mouse support - Drag and drop floating windows with the mouse
 
 When WinBender mode is active:
-  - Floating windows are numbered for quick access (g1-g9)
-  - Window titles are temporarily modified to show quick access labels
-  - Window footers display details (winid, anchor, row, col)
-  - A set of keybindings becomes available for window manipulation
-  - Mouse drag and drop is enabled for repositioning windows
-  - The original window configuration is saved for reset capability
+  - Floating windows are numbered ([g1], [g2], etc.) in their titles
+  - Window footers display details (winid, anchor, row, col) for floating
+  - The focused window is highlighted for better visibility
+  - A comprehensive set of keymaps becomes available for window manipulation
 
 ==============================================================================
 2. REQUIREMENTS                                       *winbender-requirements*
 
-  - Neovim 0.7.2 or later (with partial compatibility)
-  - Neovim 0.10.0 or later recommended for full feature support
-
-Note: Older versions (0.7.2+) are supported with limited functionality. The
-floating window title and footer features used for quick access labels are
-not available. Core window manipulation functionality remains available.
+  - Tested on Neovim 0.11.5
 
 ==============================================================================
-3. USAGE                                                     *winbender-usage*
+3. BETA NOTICE                                               *winbender-beta*
 
-To activate WinBender mode, use the |:WinBenderToggle| command, or, if
-configured, the toggle key. WinBender will search for floating windows in the
-current tab and create a layer of keymaps for manipulating them.
+This plugin is currently in beta. While the core functionality is stable,
+some features are experimental and may undergo changes. Keymaps are not
+finalized and may be adjusted or removed in future releases.
 
-Create a toggle key by either setting the `toggle_key` option in your `opts`
-configuration (see |winbender-config-toggle_key|), or by mapping your own key to
-`<Plug>(winbender-toggle)` in your configuration. For example, to use
-`<leader>f` as the toggle key:
+==============================================================================
+4. USAGE                                                     *winbender-usage*
+
+WinBender provides a modal window management interface. Toggle WinBender with 
+|:WinBenderToggle| or create a keymap. There are two methods for defining a 
+toggle keymap: either set the `toggle_key` in the `opts` config table (see
+|winbender-config-toggle_key|), or define your own keymap:
 
 >lua
-    vim.keymap.set('n', '<leader>f', '<Plug>(winbender-toggle)',
-                   { desc = 'WinBender: Toggle activation' })
+    vim.keymap.set('n', '<leader>f', '<Plug>(winbender-toggle)')
 <
 
-While active:
-  1. WinBender keymaps become active
-  2. Focus is set to the first floating window
-  3. Floating windows are numbered with [g1], [g2], etc. in their titles
-  4. Floating window footers display details (winid, anchor, row, col)
-  5. Original keymaps are restored on exit
+When activated, WinBender creates a keybinding layer for window management:
+  - Floating windows are numbered ([g1], [g2], etc.) in their titles for 
+    quick access
+  - Window footers display details (winid, anchor, row, col) for floating 
+    windows
+  - The focused window is highlighted for better visibility
+  - A comprehensive set of keymaps becomes available for all window 
+    manipulation operations
 
-Use the toggle again to deactivate WinBender. This will restore the original
-window focus, remove the quick access labels, and restore previous keymaps.
+While active, you can:
+  - Navigate between any windows (floating or docked)
+  - Reposition floating windows
+  - Resize any window (floating or docked)
+  - Switch between docked splits using familiar vim navigation
+  - Set anchor points for floating windows
+  - Reset windows to their original configuration
+  - Use the mouse to drag floating windows
 
-All movement and resize operations support count prefixes. For example:
-  `5j`  - Move window down 25 units (5 × default step_size.position)
-  `3H`  - Expand window left by 15 units (3 × default step_size.size)
+All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
+
+Context-aware behavior: These keymaps adapt to the current window type:
+  - When focused on a **floating window**: `h/j/k/l` reposition the window in 
+    screen space
+  - When focused on a **docked window**: `h/j/k/l` switch to adjacent splits 
+    (like `<C-w>h/j/k/l>`)
 
 If cyclops.vim (https://github.com/numEricL/cyclops.vim) is installed,
-additional keymaps are defined: use `;` and `,` to repeat or reverse the last
-operation. See |winbender-cyclops-integration|.
+WinBender will automatically enable repeatable operations with persistent 
+counts for paired keymaps via the `;` and `,` keys.
 
 ==============================================================================
-4. COMMANDS                                               *winbender-commands*
+5. COMMANDS                                               *winbender-commands*
 
 :WinBenderToggle                                          *:WinBenderToggle*
-    Toggle WinBender mode on or off. When enabled, floating windows are
-    indexed and manipulation keymaps are activated. When disabled, returns
-    to the original window and restores previous state.
+    Toggle WinBender mode on or off. When enabled, creates a modal keybinding
+    layer for window management. Floating windows are indexed, the focused 
+    window is highlighted, and window manipulation keymaps are activated. When 
+    disabled, returns to the original window and restores previous state.
 
 ==============================================================================
-5. KEYMAPS                                                 *winbender-keymaps*
+6. KEYMAPS                                                 *winbender-keymaps*
 
 Toggle Key~
                                                    *winbender-toggle-default*
@@ -93,22 +110,50 @@ Toggle Key~
 
 WinBender Mode Keymaps~
 
-These keymaps are active only while WinBender mode is enabled:
+While active, floating windows are numbered for quick access. Focused windows
+are highlighted, and the following keymaps become available:
 
-Navigation~
+Key             Action~
+f / F           Focus next/previous floating window
+n / N           Focus next/previous docked window
+gf / gd         Float/dock the current window
+g1-g9           Jump to numbered floating window
+h/j/k/l         Move floating window or change docked focus
+H/J/K/L         Expand window* in specified direction
+<C-h/j/k/l>     Shrink window* in specified direction
+gh/gj/gk/gl     Snap floating window to screen edge
+> / <           Increase/decrease width relative to anchor
++ / -           Increase/decrease height relative to anchor
+q/w/a/s         Set anchor to NW/NE/SW/SE (floating only)
+u               Reset window to original configuration
+
+* Note: Resize operations (H/J/K/L and <C-h/j/k/l>) are not currently
+implemented for docked windows.
+
+All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
+
+Context-aware behavior: These keymaps adapt to the current window type:
+  - When focused on a **floating window**: `h/j/k/l` reposition the window in 
+    screen space
+  - When focused on a **docked window**: `h/j/k/l` switch to adjacent splits 
+    (like `<C-w>h/j/k/l>`)
+
+Detailed Keymap Reference~
                                                *winbender-keymap-focus-next*
-f               Focus next floating window (cycles forward)
+f               Focus next floating window
                                                *winbender-keymap-focus-prev*
-F               Focus previous floating window (cycles backward)
+F               Focus previous floating window
+                                               *winbender-keymap-docked-next*
+n               Focus next docked window
+                                               *winbender-keymap-docked-prev*
+N               Focus previous docked window
 
-Position~
                                                *winbender-keymap-shift*
-h               Move window left
-j               Move window down
-k               Move window up
-l               Move window right
+h               Move floating window left or switch to left split (docked)
+j               Move floating window down or switch to below split (docked)
+k               Move floating window up or switch to above split (docked)
+l               Move floating window right or switch to right split (docked)
 
-Resize (Directional)~
                                                *winbender-keymap-increase*
 H               Expand window to the left
 J               Expand window downward
@@ -121,14 +166,12 @@ L               Expand window to the right
 <C-k>           Shrink window from the top
 <C-l>           Shrink window from the left
 
-Resize (Symmetrical)~
                                                *winbender-keymap-size*
 >               Increase width (expands both left and right)
 <               Decrease width (shrinks both left and right)
 +               Increase height (expands both top and bottom)
 -               Decrease height (shrinks both top and bottom)
 
-Anchor Points~
                                                *winbender-keymap-anchor*
 q               Set anchor to NorthWest (top-left)
 w               Set anchor to NorthEast (top-right)
@@ -137,65 +180,76 @@ s               Set anchor to SouthEast (bottom-right)
 
 Note: Changing the anchor affects how the window is positioned relative to
 its row/col coordinates. The window will reposition to maintain its visual
-location while changing the reference point.
+location while changing the reference point. Only applicable to floating
+windows.
 
-Reset~
                                                *winbender-keymap-reset*
 u               Reset window to its original configuration (position, size,
                 and anchor as they were when WinBender mode was activated)
 
-Snap (Experimental)~
                                                *winbender-keymap-snap*
-                                               *winbender-experimental-snap*
+gh              Snap window to left edge of screen
+gj              Snap window to bottom edge of screen
+gk              Snap window to top edge of screen
+gl              Snap window to right edge of screen
 
-WinBender includes an experimental snap feature that allows windows to be
-quickly snapped to screen edges. This feature is disabled by default and must
-be explicitly enabled via keymaps configuration in |winbender.setup()|.
+                                                *winbender-keymap-dock-float*
+gf              Convert current docked window to floating window
+gd              Convert current floating window to docked split
 
-Warning: The snap feature is experimental. How it interacts with repositioning
-is expected to change in future versions.
-
-When enabled, the following keymaps become available:
-    snap_left       Snap window to the left edge of the screen
-    snap_down       Snap window to the bottom edge of the screen
-    snap_up         Snap window to the top edge of the screen
-    snap_right      Snap window to the right edge of the screen
-
-Example configuration to enable snap keymaps:
->lua
-    require("winbender").setup{
-      keymaps = {
-        snap_left  = "gh",
-        snap_down  = "gj",
-        snap_up    = "gk",
-        snap_right = "gl"
-      }
-    }
-<
-
-Quick Access~
                                                *winbender-keymap-quick-access*
 g1 - g9         Jump directly to floating window 1-9
 
 ==============================================================================
-6. MOUSE CONTROLS                                             *winbender-mouse*
+7. FEATURES                                                 *winbender-features*
 
-When WinBender mode is active and mouse support is enabled (default), you can
-use the mouse to interact with floating windows:
+Docking and Floating~
+                                                    *winbender-dock-float*
 
-Mouse Actions~
-                                                    *winbender-mouse-click*
-<LeftMouse>     Click on a floating window to focus it
+WinBender lets you convert between docked window splits and floating windows.
+Window sizes are preserved when possible, as well as window-local options. 
+When docking a floating window, WinBender first determines the closest docked 
+window based on greatest overlap, then determines the best split direction by 
+comparing the midpoints of the two windows. These implementation details are 
+subject to change in future releases.
 
-                                                    *winbender-mouse-drag*
-<LeftDrag>      Click and drag a floating window to reposition it. The window
-                is focused immediately when you click.
+Snap Windows~
+                                                    *winbender-snap-windows*
+
+Floating windows can be quickly snapped to screen edges. When two corners of 
+a floating window are matched to screen corners and is docked, a new top-level
+split is created at that position.
+
+Mouse Support~
+                                                    *winbender-mouse-support*
+
+When WinBender mode is active and mouse support is enabled (default), floating
+windows may be dragged, and docked windows may be undocked via mouse input.
+
+Mouse Actions:
+  <LeftMouse>   Click on a floating window to focus it
+  <LeftDrag>    Click and drag a floating window to reposition it
 
 To disable mouse support, set `mouse_enabled = false` in your configuration.
 See |winbender-config-mouse_enabled|.
 
+Focused Window Highlighting~
+                                                    *winbender-window-highlight*
+
+When WinBender mode is active, the currently focused window is highlighted
+with a slightly adjusted background color to make it more visible. This
+highlighting automatically updates when you switch between windows.
+
+The highlighting works by adjusting several highlight groups:
+  - ColorColumn, CursorLine, CursorLineNr, EndOfBuffer
+  - FoldColumn, LineNr, NonText, Normal, SignColumn
+
+For light backgrounds, the colors are darkened slightly. For dark backgrounds,
+they are lightened. The adjustment factor is 0.25 (25%). The original window
+highlights are automatically restored when WinBender mode is deactivated.
+
 ==============================================================================
-7. CONFIGURATION                                     *winbender-configuration*
+8. CONFIGURATION                                     *winbender-configuration*
                                                             *winbender-config*
                                                            *winbender.setup()*
 
@@ -234,17 +288,30 @@ Configure WinBender by calling the setup function. Default configuration:
         anchor_SW = 'a',
         anchor_SE = 's',
         
-        -- Experimental snap feature (disabled by default)
-        -- snap_left  = nil,
-        -- snap_down  = nil,
-        -- snap_up    = nil,
-        -- snap_right = nil,
+        snap_left = 'gh',
+        snap_down = 'gj',
+        snap_up = 'gk',
+        snap_right = 'gl',
+        
+        dock_window = 'gd',
+        float_window = 'gf',
+        
+        focus_next_docked = 'n',
+        focus_prev_docked = 'N',
       },
       step_size = {
         position = 5,
         size = 5,
       },
       quick_access_hl = 'WarningMsg',
+      cell_pixel_ratio_w_to_h = 12/26,
+      cyclops_opts = {
+        accepts_count      = 1,
+        accepts_register   = 0,
+        accepts_input      = 0,
+        persistent_count   = 1,
+        absolute_direction = 0,
+      },
     })
 <
 
@@ -275,12 +342,8 @@ keymaps                                              *winbender-config-keymaps*
     
     A table of keymap definitions for WinBender mode operations. Each key
     corresponds to an action (e.g., focus_next, shift_left) and its value
-    is the key sequence to trigger that action.
-    
-    Note: The snap keymaps (snap_left, snap_down, snap_up, snap_right) are
-    experimental and disabled by default (set to nil). See 
-    |winbender-experimental-snap| for details. These must be explicitly 
-    configured to be enabled.
+    is the key sequence to trigger that action. All keymaps can be customized
+    or disabled by setting them to `nil`.
 
 step_size                                          *winbender-config-step_size*
     Type: `table`
@@ -304,23 +367,39 @@ quick_access_hl                              *winbender-config-quick_access_hl*
     valid highlight group name (e.g., 'WarningMsg', 'ErrorMsg', 'Title',
     'Special') to customize the appearance of the quick access indicators.
 
-==============================================================================
-8. INTEGRATION                                         *winbender-integration*
+cell_pixel_ratio_w_to_h                  *winbender-config-cell_pixel_ratio*
+    Type: `number`
+    Default: `12/26` (approximately 0.46)
+    
+    The aspect ratio of terminal cells (width/height) in pixels. This is
+    used for window calculations when converting between width and height,
+    particularly in the experimental snap feature. Adjust this if your
+    terminal uses a different character cell aspect ratio.
 
-cyclops.vim
-                                             *winbender-cyclops-integration*
+cyclops_opts                                    *winbender-config-cyclops_opts*
+    Type: `table`
+    Default: See configuration example above
+    
+    Configuration options for cyclops.vim integration. Only relevant if
+    cyclops.vim is installed. Controls how WinBender keymaps interact with
+    the cyclops repeat system. See |winbender-cyclops-integration| for details.
+
+==============================================================================
+9. INTEGRATION                                         *winbender-integration*
+
+cyclops.vim                                   *winbender-cyclops-integration*
 
 If cyclops.vim (https://github.com/numEricL/cyclops.vim) is installed,
-WinBender will automatically integrate with it to enable repeatable
-operations with persistent counts for paired keymaps.
+WinBender will automatically enable repeatable operations with persistent 
+counts for paired keymaps via the `;` and `,` keys.
 
 This allows you to:
   - Use `;` to repeat the operation with the same count
   - Use `,` to repeat the opposite operation with the same count
 
-For example, after pressing `5j` to move down, you can press `;` to move down by
-5 again, or `,` to move up by 5. The count persists with `;` and `,` until a new
-count or mapping is used.
+For example, after pressing `5j` to move down, you can press `;` to move down 
+by 5 again, or `,` to move up by 5. The count persists with `;` and `,` until 
+a new count or mapping is used.
 
 Integration is automatic and requires no configuration. If cyclops.vim
 is not installed, WinBender will function normally without this feature.
