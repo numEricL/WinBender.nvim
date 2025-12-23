@@ -1,3 +1,4 @@
+-- compatibility for nvim 0.7.2 is a WIP
 local M = {}
 
 local initialized = false
@@ -49,6 +50,23 @@ function M.nvim_win_set_config(winid, cfg)
         cfg.footer_pos = nil
     end
     vim.api.nvim_win_set_config(winid, cfg)
+end
+
+-- neovim 0.7.2 compat
+function M.nvim_get_hl(ns_id, opts)
+    local ok, result = pcall(vim.api.nvim_get_hl, ns_id, opts)
+    if ok then
+        return result
+    else
+        local cterm_hl = vim.api.nvim_get_hl_by_name('normal', false)
+        local gui_hl = vim.api.nvim_get_hl_by_name('normal', true)
+        return { 
+            bg = gui_hl.background,
+            fg = gui_hl.foreground,
+            ctermbg = cterm_hl.background,
+            ctermfg = cterm_hl.foreground,
+        }
+    end
 end
 
 return M

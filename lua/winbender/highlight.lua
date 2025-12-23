@@ -1,6 +1,7 @@
-local core  = require("winbender.core")
-local utils = require("winbender.utils")
-local state = require("winbender.state")
+local core   = require("winbender.core")
+local compat = require("winbender.compat")
+local utils  = require("winbender.utils")
+local state  = require("winbender.state")
 
 local M = {}
 local highlight_factor = 0.25
@@ -105,7 +106,7 @@ local function update_window_highlight(winid)
     local is_focused = (winid == core.get_current_window())
 
     if is_focused then
-        local normal_hl = vim.api.nvim_get_hl(0, { name = "Normal" })
+        local normal_hl = compat.nvim_get_hl(0, { name = "Normal" })
         local normal_bg = {
             gui = adjust_color_hex(string.format("#%06x", normal_hl.bg), highlight_factor),
             cterm = adjust_color_cterm(normal_hl.ctermbg, highlight_factor),
