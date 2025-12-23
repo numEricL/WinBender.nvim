@@ -138,7 +138,7 @@ function M.labels(winid)
         local winid_closest = dock.find_closest_docked_window(winid)
         local orientation = dock.orientation_new_docked_window(winid, winid_closest)
         footer = "[" .. winid_closest .. "]"
-        footer = footer .. "[" .. orientation:sub(1,1) .. "]"
+        footer = footer .. "[" .. string.upper(orientation:sub(1,1)) .. "]"
         footer = footer .. "[" .. cfg.anchor .. "]"
         footer = footer .. "(" .. cfg.row .. "," .. cfg.col .. ")"
     end
