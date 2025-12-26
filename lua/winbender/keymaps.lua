@@ -18,6 +18,7 @@ local function focus_next_float(args, count)
         return
     end
     core.focus_window(winid)
+    display.labels(winid)
 end
 
 local function focus_next_dock(args, count)
@@ -26,6 +27,7 @@ local function focus_next_dock(args, count)
         return
     end
     core.focus_window(winid)
+    display.labels(winid)
 end
 
 ---@diagnostic disable-next-line: unused-local
@@ -55,7 +57,7 @@ local function move_or_reposition(args, count)
                     (args.y_delta > 0) and 'j' or nil
         local count1 = math.max(1, count)
         if dir then
-            vim.cmd('wincmd '   .. tostring(count1) .. dir)
+            vim.cmd('wincmd ' .. tostring(count1) .. dir)
         end
     end
 end
@@ -69,58 +71,40 @@ local function update_anchor(args)
     display.labels(winid)
 end
 
-local function resize(args, count)
-    local winid = core.get_current_floating_window()
-    if not winid then
-        return
-    end
-    local step = (count == 0) and args.step or count
-    core.resize_floating_window(winid, step*args.x_delta, step*args.y_delta)
-    display.labels(winid)
-end
-
-local function resize_dir(args, count)
-    local winid = core.get_current_floating_window()
-    if not winid then
-        return
-    end
-    local old_anchor = compat.nvim_win_get_config(winid).anchor
-    local dir_map = {
-        left = { anchor = old_anchor:sub(1,1) .. 'E', dx = 1, dy = 0 },
-        right= { anchor = old_anchor:sub(1,1) .. 'W', dx = 1, dy = 0 },
-        up   = { anchor = 'S' .. old_anchor:sub(2,2), dx = 0, dy = 1 },
-        down = { anchor = 'N' .. old_anchor:sub(2,2), dx = 0, dy = 1 },
-    }
-    local d = dir_map[args.dir]
-
+local function resize_edge(args, count)
+    local winid = core.get_current_window()
     local sign = (args.step > 0) and 1 or -1
     local step = (count == 0) and args.step or sign*count
-
-    core.update_anchor(winid, d.anchor)
-    core.resize_floating_window(winid, step*d.dx, step*d.dy)
-    core.update_anchor(winid, old_anchor)
+    local silent = true
+    if state.validate_docked_window(winid, silent) then
+        core.resize_docked_window(winid, args.edge, step)
+    elseif state.validate_floating_window(winid, silent) then
+        core.resize_floating_window(winid, args.edge, step)
+    else
+        return
+    end
     display.labels(winid)
 end
 
-local function snap_dir(args)
+local function snap(args)
     local winid = core.get_current_floating_window()
     if not winid then
         return
     end
     local max_row = vim.o.lines
     local max_col = vim.o.columns
-    local dir_map = {
-        left  = {dx = -max_col, dy = 0, dir1 = 'up',   dir2 = 'down',  step = max_row},
-        right = {dx =  max_col, dy = 0, dir1 = 'up',   dir2 = 'down',  step = max_row},
-        up    = {dx = 0, dy = -max_row, dir1 = 'left', dir2 = 'right', step = max_col},
-        down  = {dx = 0, dy =  max_row, dir1 = 'left', dir2 = 'right', step = max_col},
+    local edge_map = {
+        left   = {dx = -max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
+        right  = {dx =  max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
+        top    = {dx = 0, dy = -max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
+        bottom = {dx = 0, dy =  max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
     }
 
-    local d = dir_map[args.dir]
+    local d = edge_map[args.edge]
     core.make_square_floating_window(winid)
     core.reposition_floating_window(winid, d.dx, d.dy)
-    resize_dir({dir = d.dir1, step = d.step}, 0)
-    resize_dir({dir = d.dir2, step = d.step}, 0)
+    resize_edge({edge = d.edge1, step = d.step}, 0)
+    resize_edge({edge = d.edge2, step = d.step}, 0)
 end
 
 ---@diagnostic disable-next-line: unused-local
@@ -153,44 +137,40 @@ end
 
 local function get_maps()
     local keys = options.keymaps
-    local p_sz = options.step_size.position
-    local s_sz = options.step_size.size
+    local p_sz = { x = options.step_size.position_x, y = options.step_size.position_y }
+    local s_sz = { x = options.step_size.size_x,     y = options.step_size.size_y     }
     local maps = {
-        focus_next_float = { map = keys.focus_next_float,   func = focus_next_float,   args = {dir = 'forward' } },
-        focus_prev_float = { map = keys.focus_prev_float,   func = focus_next_float,   args = {dir = 'backward'} },
-        focus_next_dock  = { map = keys.focus_next_dock,    func = focus_next_dock,    args = {dir = 'forward' } },
-        focus_prev_dock  = { map = keys.focus_prev_dock,    func = focus_next_dock,    args = {dir = 'backward'} },
-        reset_window     = { map = keys.reset_window, func = reset_window, args = {}                             },
+        focus_next_float = { map = keys.focus_next_float, func = focus_next_float, args = {dir = 'forward' } },
+        focus_prev_float = { map = keys.focus_prev_float, func = focus_next_float, args = {dir = 'backward'} },
+        focus_next_dock  = { map = keys.focus_next_dock,  func = focus_next_dock,  args = {dir = 'forward' } },
+        focus_prev_dock  = { map = keys.focus_prev_dock,  func = focus_next_dock,  args = {dir = 'backward'} },
 
-        move_left  = { map = keys.move_left,  func = move_or_reposition, args = {x_delta = -1, y_delta =  0, step = p_sz} },
-        move_right = { map = keys.move_right, func = move_or_reposition, args = {x_delta =  1, y_delta =  0, step = p_sz} },
-        move_down  = { map = keys.move_down,  func = move_or_reposition, args = {x_delta =  0, y_delta =  1, step = p_sz} },
-        move_up    = { map = keys.move_up,    func = move_or_reposition, args = {x_delta =  0, y_delta = -1, step = p_sz} },
+        reset_window = { map = keys.reset_window, func = reset_window, args = {} },
 
-        increase_left  = { map = keys.increase_left,  func = resize_dir, args = {dir = 'left',  step = s_sz} },
-        increase_right = { map = keys.increase_right, func = resize_dir, args = {dir = 'right', step = s_sz} },
-        increase_down  = { map = keys.increase_down,  func = resize_dir, args = {dir = 'down',  step = s_sz} },
-        increase_up    = { map = keys.increase_up,    func = resize_dir, args = {dir = 'up',    step = s_sz} },
+        move_left  = { map = keys.move_left,  func = move_or_reposition, args = {x_delta = -1, y_delta =  0, step = p_sz.x} },
+        move_right = { map = keys.move_right, func = move_or_reposition, args = {x_delta =  1, y_delta =  0, step = p_sz.x} },
+        move_down  = { map = keys.move_down,  func = move_or_reposition, args = {x_delta =  0, y_delta =  1, step = p_sz.y} },
+        move_up    = { map = keys.move_up,    func = move_or_reposition, args = {x_delta =  0, y_delta = -1, step = p_sz.y} },
 
-        decrease_left  = { map = keys.decrease_left,  func = resize_dir, args = {dir = 'left',  step = -s_sz} },
-        decrease_right = { map = keys.decrease_right, func = resize_dir, args = {dir = 'right', step = -s_sz} },
-        decrease_down  = { map = keys.decrease_down,  func = resize_dir, args = {dir = 'down',  step = -s_sz} },
-        decrease_up    = { map = keys.decrease_up,    func = resize_dir, args = {dir = 'up',    step = -s_sz} },
+        increase_left   = { map = keys.increase_left,   func = resize_edge, args = {edge = 'left',   step = s_sz.x} },
+        increase_right  = { map = keys.increase_right,  func = resize_edge, args = {edge = 'right',  step = s_sz.x} },
+        increase_bottom = { map = keys.increase_bottom, func = resize_edge, args = {edge = 'bottom', step = s_sz.y} },
+        increase_top    = { map = keys.increase_top,    func = resize_edge, args = {edge = 'top',    step = s_sz.y} },
 
-        snap_left = { map = keys.snap_left,  func = snap_dir, args = {dir = 'left' } },
-        snap_right= { map = keys.snap_right, func = snap_dir, args = {dir = 'right'} },
-        snap_up   = { map = keys.snap_up,    func = snap_dir, args = {dir = 'up'   } },
-        snap_down = { map = keys.snap_down,  func = snap_dir, args = {dir = 'down' } },
+        decrease_left   = { map = keys.decrease_left,   func = resize_edge, args = {edge = 'left',   step = -s_sz.x} },
+        decrease_right  = { map = keys.decrease_right,  func = resize_edge, args = {edge = 'right',  step = -s_sz.x} },
+        decrease_bottom = { map = keys.decrease_bottom, func = resize_edge, args = {edge = 'bottom', step = -s_sz.y} },
+        decrease_top    = { map = keys.decrease_top,    func = resize_edge, args = {edge = 'top',    step = -s_sz.y} },
 
-        increase_width  = { map = keys.increase_width,  func = resize, args = {x_delta =  1, y_delta =  0, step = s_sz} },
-        decrease_width  = { map = keys.decrease_width,  func = resize, args = {x_delta = -1, y_delta =  0, step = s_sz} },
-        increase_height = { map = keys.increase_height, func = resize, args = {x_delta =  0, y_delta =  1, step = s_sz} },
-        decrease_height = { map = keys.decrease_height, func = resize, args = {x_delta =  0, y_delta = -1, step = s_sz} },
+        snap_left = { map = keys.snap_left,  func = snap, args = {edge = 'left'  } },
+        snap_right= { map = keys.snap_right, func = snap, args = {edge = 'right' } },
+        snap_up   = { map = keys.snap_up,    func = snap, args = {edge = 'top'   } },
+        snap_down = { map = keys.snap_down,  func = snap, args = {edge = 'bottom'} },
 
-        anchor_NW = { map = keys.anchor_NW, func = update_anchor,  args = {anchor = 'NW'} },
-        anchor_NE = { map = keys.anchor_NE, func = update_anchor,  args = {anchor = 'NE'} },
-        anchor_SW = { map = keys.anchor_SW, func = update_anchor,  args = {anchor = 'SW'} },
-        anchor_SE = { map = keys.anchor_SE, func = update_anchor,  args = {anchor = 'SE'} },
+        anchor_NW = { map = keys.anchor_NW, func = update_anchor, args = {anchor = 'NW'} },
+        anchor_NE = { map = keys.anchor_NE, func = update_anchor, args = {anchor = 'NE'} },
+        anchor_SW = { map = keys.anchor_SW, func = update_anchor, args = {anchor = 'SW'} },
+        anchor_SE = { map = keys.anchor_SE, func = update_anchor, args = {anchor = 'SE'} },
 
         dock_window  = { map = keys.dock_window,  func = dock_window,  args = {} },
         float_window = { map = keys.float_window, func = float_window, args = {} },

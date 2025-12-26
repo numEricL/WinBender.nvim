@@ -58,7 +58,7 @@ function M.get_win_size(win_config)
     return win_size
 end
 
-function M.get_max_resize_deltas(win_config)
+local function get_max_resize_deltas(win_config)
     local anchor = win_config.anchor
     local row, col = win_config.row, win_config.col
     local win_size = M.get_win_size(win_config)
@@ -79,6 +79,14 @@ local function get_pos_bound(win_config, dir)
     elseif dir == 'E' then
         return vim.o.columns - (anchor:sub(2,2) == 'E' and 0 or win_size['width'])
     end
+end
+
+function M.resize_anchored_floating_window(win_config, x_delta, y_delta)
+    local width_bound, height_bound = get_max_resize_deltas(win_config)
+    x_delta = math.min(x_delta, width_bound)
+    y_delta = math.min(y_delta, height_bound)
+    win_config.height = math.max(win_config.height + y_delta, 1)
+    win_config.width = math.max(win_config.width + x_delta, 1)
 end
 
 function M.reposition_in_bounds(win_config)

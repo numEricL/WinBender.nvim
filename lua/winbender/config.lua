@@ -10,32 +10,31 @@ local defaults = {
         focus_prev_float = 'F',
         focus_next_dock  = 'n',
         focus_prev_dock  = 'N',
-        reset_window     = 'u',
+
+        dock_window  = 'gd',
+        float_window = 'gf',
+
+        reset_window = 'u',
 
         move_left  = 'h',
         move_down  = 'j',
         move_up    = 'k',
         move_right = 'l',
 
-        increase_left  = 'H',
-        increase_down  = 'J',
-        increase_up    = 'K',
-        increase_right = 'L',
+        increase_left   = 'H',
+        increase_bottom = 'J',
+        increase_top    = 'K',
+        increase_right  = 'L',
 
-        decrease_left  = '<c-l>',
-        decrease_down  = '<c-k>',
-        decrease_up    = '<c-j>',
-        decrease_right = '<c-h>',
+        decrease_right  = '<c-h>',
+        decrease_top    = '<c-j>',
+        decrease_bottom = '<c-k>',
+        decrease_left   = '<c-l>',
 
-        snap_left  = nil,
-        snap_down  = nil,
-        snap_up    = nil,
-        snap_right = nil,
-
-        increase_width  = '>',
-        decrease_width  = '<',
-        increase_height = '+',
-        decrease_height = '-',
+        snap_left  = 'gh',
+        snap_down  = 'gj',
+        snap_up    = 'gk',
+        snap_right = 'gl',
 
         anchor_NW = 'q',
         anchor_NE = 'w',
@@ -43,8 +42,10 @@ local defaults = {
         anchor_SE = 's',
     },
     step_size = {
-        position = 5,
-        size     = 5,
+        position_x = 5,
+        position_y = 3,
+        size_x     = 5,
+        size_y     = 3,
     },
     cyclops_opts = {
         accepts_count      = 1,
