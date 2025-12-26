@@ -76,9 +76,9 @@ local function resize_edge(args, count)
     local sign = (args.step > 0) and 1 or -1
     local step = (count == 0) and args.step or sign*count
     local silent = true
-    if state.validate_docked_window(winid, true) then
+    if state.validate_docked_window(winid, silent) then
         core.resize_docked_window(winid, args.edge, step)
-    elseif state.validate_floating_window(winid, true) then
+    elseif state.validate_floating_window(winid, silent) then
         core.resize_floating_window(winid, args.edge, step)
     else
         return
@@ -94,10 +94,10 @@ local function snap(args)
     local max_row = vim.o.lines
     local max_col = vim.o.columns
     local edge_map = {
-        left  = {dx = -max_col, dy = 0, edge1 = 'up',   edge2 = 'down',  step = max_row},
-        right = {dx =  max_col, dy = 0, edge1 = 'up',   edge2 = 'down',  step = max_row},
-        up    = {dx = 0, dy = -max_row, edge1 = 'left', edge2 = 'right', step = max_col},
-        down  = {dx = 0, dy =  max_row, edge1 = 'left', edge2 = 'right', step = max_col},
+        left   = {dx = -max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
+        right  = {dx =  max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
+        top    = {dx = 0, dy = -max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
+        bottom = {dx = 0, dy =  max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
     }
 
     local d = edge_map[args.edge]
@@ -152,15 +152,15 @@ local function get_maps()
         move_down  = { map = keys.move_down,  func = move_or_reposition, args = {x_delta =  0, y_delta =  1, step = p_sz.y} },
         move_up    = { map = keys.move_up,    func = move_or_reposition, args = {x_delta =  0, y_delta = -1, step = p_sz.y} },
 
-        increase_left  = { map = keys.increase_left,  func = resize_edge, args = {edge = 'left',   step = s_sz.x} },
-        increase_right = { map = keys.increase_right, func = resize_edge, args = {edge = 'right',  step = s_sz.x} },
-        increase_down  = { map = keys.increase_down,  func = resize_edge, args = {edge = 'bottom', step = s_sz.y} },
-        increase_up    = { map = keys.increase_up,    func = resize_edge, args = {edge = 'top',    step = s_sz.y} },
+        increase_left   = { map = keys.increase_left,   func = resize_edge, args = {edge = 'left',   step = s_sz.x} },
+        increase_right  = { map = keys.increase_right,  func = resize_edge, args = {edge = 'right',  step = s_sz.x} },
+        increase_bottom = { map = keys.increase_bottom, func = resize_edge, args = {edge = 'bottom', step = s_sz.y} },
+        increase_top    = { map = keys.increase_top,    func = resize_edge, args = {edge = 'top',    step = s_sz.y} },
 
-        decrease_left  = { map = keys.decrease_left,  func = resize_edge, args = {edge = 'left',   step = -s_sz.x} },
-        decrease_right = { map = keys.decrease_right, func = resize_edge, args = {edge = 'right',  step = -s_sz.x} },
-        decrease_down  = { map = keys.decrease_down,  func = resize_edge, args = {edge = 'bottom', step = -s_sz.y} },
-        decrease_up    = { map = keys.decrease_up,    func = resize_edge, args = {edge = 'top',    step = -s_sz.y} },
+        decrease_left   = { map = keys.decrease_left,   func = resize_edge, args = {edge = 'left',   step = -s_sz.x} },
+        decrease_right  = { map = keys.decrease_right,  func = resize_edge, args = {edge = 'right',  step = -s_sz.x} },
+        decrease_bottom = { map = keys.decrease_bottom, func = resize_edge, args = {edge = 'bottom', step = -s_sz.y} },
+        decrease_top    = { map = keys.decrease_top,    func = resize_edge, args = {edge = 'top',    step = -s_sz.y} },
 
         snap_left = { map = keys.snap_left,  func = snap, args = {edge = 'left'  } },
         snap_right= { map = keys.snap_right, func = snap, args = {edge = 'right' } },
