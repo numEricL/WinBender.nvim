@@ -32,19 +32,16 @@ local defaults = {
         snap_up    = nil,
         snap_right = nil,
 
-        increase_width  = '>',
-        decrease_width  = '<',
-        increase_height = '+',
-        decrease_height = '-',
-
         anchor_NW = 'q',
         anchor_NE = 'w',
         anchor_SW = 'a',
         anchor_SE = 's',
     },
     step_size = {
-        position = 5,
-        size     = 5,
+        position_x = 5,
+        position_y = 3,
+        size_x     = 5,
+        size_y     = 3,
     },
     cyclops_opts = {
         accepts_count      = 1,

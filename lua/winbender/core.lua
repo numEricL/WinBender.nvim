@@ -123,14 +123,46 @@ function M.reposition_floating_window(winid, x_delta, y_delta)
     compat.nvim_win_set_config(winid, cfg)
 end
 
-function M.resize_floating_window(winid, x_delta, y_delta)
+function M.resize_floating_window(winid, edge, delta)
     local cfg = compat.nvim_win_get_config(winid)
-    local width_bound, height_bound = win.get_max_resize_deltas(cfg)
-    x_delta = math.min(x_delta, width_bound)
-    y_delta = math.min(y_delta, height_bound)
-    cfg.height = math.max(cfg.height + y_delta, 1)
-    cfg.width = math.max(cfg.width + x_delta, 1)
+    local old_anchor = cfg.anchor
+    local dir_map = {
+        left   = { anchor = old_anchor:sub(1,1) .. 'E', dx = 1, dy = 0 },
+        right  = { anchor = old_anchor:sub(1,1) .. 'W', dx = 1, dy = 0 },
+        top    = { anchor = 'S' .. old_anchor:sub(2,2), dx = 0, dy = 1 },
+        bottom = { anchor = 'N' .. old_anchor:sub(2,2), dx = 0, dy = 1 },
+    }
+    local d = dir_map[edge]
+
+    win.set_anchor(cfg, d.anchor)
+    win.resize_anchored_floating_window(cfg, delta*d.dx, delta*d.dy)
+    win.set_anchor(cfg, old_anchor)
     compat.nvim_win_set_config(winid, cfg)
+end
+
+function M.resize_docked_window(winid, edge, delta)
+    local winnr = vim.api.nvim_win_get_number(winid)
+    if edge == 'left' then
+        local left_winnr = vim.fn.winnr('h')
+        if left_winnr == winnr then
+            return
+        end
+        vim.fn.win_move_separator(left_winnr, -delta)
+    elseif edge == 'right' then
+        vim.fn.win_move_separator(winnr, delta)
+    elseif edge == 'top' then
+        local upper_winnr = vim.fn.winnr('k')
+        if upper_winnr == winnr then
+            return
+        end
+        vim.fn.win_move_statusline(upper_winnr, -delta)
+    elseif edge == 'bottom' then
+        local down_winnr = vim.fn.winnr('j')
+        if down_winnr == winnr then
+            return
+        end
+        vim.fn.win_move_statusline(winnr, delta)
+    end
 end
 
 function M.make_square_floating_window(winid)
