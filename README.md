@@ -52,9 +52,9 @@ call plug#end()
 
 ## Usage
 
-WinBender provides a modal window management interface. Toggle WinBender with 
-`:WinBenderToggle` or create a keymap. There are two methods provided for 
-defining a toggle keymap, either set the `toggle_key` in the `opts` config 
+WinBender provides a modal window management interface. Toggle WinBender with
+`:WinBenderToggle` or create a keymap. There are two methods provided for
+defining a toggle keymap, either set the `toggle_key` in the `opts` config
 table, or define your own keymap:
 
 ```lua
@@ -88,16 +88,11 @@ are highlighted, and the following keymaps become available:
 | `gf` / `gd`   | Float/dock the current window               |
 | `g1`-`g9`     | Jump to numbered floating window            |
 | `h/j/k/l`     | Move floating window or change docked focus |
-| `H/J/K/L`     | Expand window* in specified direction       |
-| `<C-h/j/k/l>` | Shrink window* in specified direction       |
+| `H/J/K/L`     | Expand window in specified direction        |
+| `<C-h/j/k/l>` | Shrink window in specified direction        |
 | `gh/gj/gk/gl` | Snap floating window to screen edge         |
-| `>` / `<`     | Increase/decrease width relative to anchor  |
-| `+` / `-`     | Increase/decrease height relative to anchor |
 | `q/w/a/s`     | Set anchor to NW/NE/SW/SE (floating only)   |
 | `u`           | Reset window to original configuration      |
-
-** \* Note:** Resize operations (`H/J/K/L` and `<C-h/j/k/l>`) are not currently
-implemented for docked windows.
 
 All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
 
@@ -131,12 +126,14 @@ input.
 require('winbender').setup({
   toggle_key = '<leader>f',  -- Key to toggle WinBender mode (default: nil)
   keymaps = {
-    -- Override default keymaps
+    -- Override default keymaps (see defaults below)
   },
   mouse_enabled = true,      -- Enable mouse drag and drop (default: true)
   step_size = {
-    position = 5,  -- Step size for position changes
-    size = 5,      -- Step size for resize operations
+    position_x = 5,  -- Step size for horizontal position changes
+    position_y = 3,  -- Step size for vertical position changes
+    size_x = 5,      -- Step size for horizontal resize operations
+    size_y = 3,      -- Step size for vertical resize operations
   },
   quick_access_hl = 'WarningMsg',  -- Highlight group for quick access labels
   cell_pixel_ratio_w_to_h = 12/26, -- Cell aspect ratio for window calculations
