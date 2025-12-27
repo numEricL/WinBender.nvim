@@ -5,8 +5,8 @@ local state  = require("winbender.state")
 
 local M = {}
 local highlight_factor = 0.25
-
 local augroup_name = "WinBenderHighlight"
+local adjusted_winhighlights = {}
 
 local function rgb_to_hex(r, g, b)
     return string.format("#%02x%02x%02x", r, g, b)
@@ -153,6 +153,19 @@ local function register_adjusted_hl_group(hl_group)
     return "WinBender" .. hl_group
 end
 
+local function get_adjusted_winhighlight(winid)
+    if adjusted_winhighlights[winid] then
+        return adjusted_winhighlights[winid]
+    end
+
+    local hl_groups = get_local_highlight_groups(winid)
+    for hl_from, hl_to in pairs(hl_groups) do
+        hl_groups[hl_from] = register_adjusted_hl_group(hl_to)
+    end
+    adjusted_winhighlights[winid] = concat_winhighlight_dict(hl_groups)
+    return adjusted_winhighlights[winid]
+end
+
 local function update_window_highlight(winid)
     local silent = true
     if not state.validate_window(winid, silent) then
@@ -161,20 +174,9 @@ local function update_window_highlight(winid)
 
     local is_focused = (winid == core.get_current_window())
     if is_focused then
-        local hl_groups = get_local_highlight_groups(winid)
-        for hl_from, hl_to in pairs(hl_groups) do
-            hl_groups[hl_from] = register_adjusted_hl_group(hl_to)
-        end
-        vim.wo[winid].winhighlight = concat_winhighlight_dict(hl_groups)
+        vim.wo[winid].winhighlight = get_adjusted_winhighlight(winid)
     else
         vim.wo[winid].winhighlight = state.get_highlight(winid)
-    end
-end
-
-local function update_all_windows()
-    local wins = vim.api.nvim_tabpage_list_wins(0)
-    for _, winid in ipairs(wins) do
-        update_window_highlight(winid)
     end
 end
 
@@ -191,10 +193,13 @@ function M.enable()
     update_window_highlight(core.get_current_window())
 
     local augroup = vim.api.nvim_create_augroup(augroup_name, { clear = true })
-    vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter" }, {
+    vim.api.nvim_create_autocmd({ "WinEnter" }, {
         group = augroup,
         callback = function()
-            update_all_windows()
+            local old_winid = vim.fn.win_getid(vim.fn.winnr("#"))
+            local new_winid = vim.api.nvim_get_current_win()
+            update_window_highlight(old_winid)
+            update_window_highlight(new_winid)
         end,
         desc = "WinBender: Update window highlights on focus change"
     })

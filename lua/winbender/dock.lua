@@ -1,5 +1,4 @@
 local compat = require("winbender.compat")
-local core   = require("winbender.core")
 local state  = require("winbender.state")
 local utils  = require("winbender.utils")
 local win    = require("winbender.win")
