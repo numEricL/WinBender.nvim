@@ -97,18 +97,6 @@ local function adjust_color_cterm(color_num, factor)
     return color_num
 end
 
-local highlight_groups = {
-    "ColorColumn",
-    "CursorLine",
-    "CursorLineNr",
-    "EndOfBuffer",
-    "FoldColumn",
-    "LineNr",
-    "NonText",
-    "Normal",
-    "SignColumn",
-}
-
 local function adjust_highlight_group(group_name, factor)
     local hl = compat.nvim_get_hl(0, { name = group_name })
     if not hl.bg then
@@ -126,6 +114,48 @@ local function adjust_highlight_group(group_name, factor)
     }
 end
 
+local function get_local_highlight_groups(winid)
+    local hl_dict = {
+        ColorColumn = "ColorColumn",
+        CursorLine = "CursorLine",
+        CursorLineNr = "CursorLineNr",
+        EndOfBuffer = "EndOfBuffer",
+        FoldColumn = "FoldColumn",
+        LineNr = "LineNr",
+        NonText = "NonText",
+        Normal = "Normal",
+        SignColumn = "SignColumn",
+    }
+
+    local pairs = vim.split(vim.wo[winid].winhighlight, ",")
+    for _, pair in ipairs(pairs) do
+        local parts = vim.split(pair, ":")
+        if hl_dict[parts[1]] then
+            hl_dict[parts[1]] = parts[2]
+        end
+    end
+    return hl_dict
+end
+
+local function concat_winhighlight_dict(hl_dict)
+    local winhighlight = {}
+    for hl_from, hl_to in pairs(hl_dict) do
+        table.insert(winhighlight, hl_from .. ":" .. hl_to)
+    end
+    return table.concat(winhighlight, ",")
+end
+
+local function register_adjusted_hl_group(hl_group)
+    if not vim.fn.hlexists("WinBender" .. hl_group) then
+    else
+        local adjusted_hl = adjust_highlight_group(hl_group, highlight_factor)
+        if adjusted_hl then
+            vim.api.nvim_set_hl(0, "WinBender" .. hl_group, adjusted_hl)
+        end
+    end
+    return "WinBender" .. hl_group
+end
+
 local function update_window_highlight(winid)
     local silent = true
     if not state.validate_window(winid, silent) then
@@ -133,20 +163,12 @@ local function update_window_highlight(winid)
     end
 
     local is_focused = (winid == core.get_current_window())
-
     if is_focused then
-        local highlight_mappings = {}
-
-        for _, group_name in ipairs(highlight_groups) do
-            local adjusted_hl = adjust_highlight_group(group_name, highlight_factor)
-            if adjusted_hl then
-                local focused_group_name = "WinBenderFocused" .. group_name
-                vim.api.nvim_set_hl(0, focused_group_name, adjusted_hl)
-                table.insert(highlight_mappings, group_name .. ":" .. focused_group_name)
-            end
+        local hl_groups = get_local_highlight_groups(winid)
+        for hl_from, hl_to in pairs(hl_groups) do
+            hl_groups[hl_from] = register_adjusted_hl_group(hl_to)
         end
-
-        vim.wo[winid].winhighlight = table.concat(highlight_mappings, ",")
+        vim.wo[winid].winhighlight = concat_winhighlight_dict(hl_groups)
     else
         vim.wo[winid].winhighlight = state.get_highlight(winid)
     end
@@ -198,7 +220,7 @@ function M.disable()
             vim.wo[winid].winhighlight = original_hl
         end
     end
-    state.clear_all_highlights()
+    state.clear_stored_highlights()
 end
 
 return M

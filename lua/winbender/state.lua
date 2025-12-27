@@ -48,7 +48,7 @@ function M.get_all_highlights()
     return win_highlights
 end
 
-function M.clear_all_highlights()
+function M.clear_stored_highlights()
     win_highlights = {}
 end
 
