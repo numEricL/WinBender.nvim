@@ -202,7 +202,8 @@ function M.enable()
         group = augroup,
         callback = function()
             local new_winid = vim.api.nvim_get_current_win()
-            vim.wo[new_winid].winhighlight = ""
+            local old_winid = vim.fn.win_getid(vim.fn.winnr("#"))
+            vim.wo[new_winid].winhighlight = state.get_highlight(old_winid)
         end,
         desc = "WinBender: Don't highlight new windows"
     })
