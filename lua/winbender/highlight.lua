@@ -166,16 +166,24 @@ local function get_stored_winhighlight(winid)
 end
 
 local function get_adjusted_winhighlight(winid)
-    if adjusted_winhighlights[winid] then
-        return adjusted_winhighlights[winid]
+    -- Check if we have a valid cached value
+    local current_src = vim.wo[winid].winhighlight or ""
+    local cached = adjusted_winhighlights[winid]
+    if cached and cached.src == current_src then
+        return cached.adjusted
     end
 
+    -- Compute and cache the adjusted highlight
     local hl_groups = get_local_highlight_groups(winid)
     for hl_from, hl_to in pairs(hl_groups) do
         hl_groups[hl_from] = register_adjusted_hl_group(hl_to)
     end
-    adjusted_winhighlights[winid] = concat_winhighlight_dict(hl_groups)
-    return adjusted_winhighlights[winid]
+    local adjusted = concat_winhighlight_dict(hl_groups)
+    adjusted_winhighlights[winid] = {
+        src = current_src,
+        adjusted = adjusted,
+    }
+    return adjusted
 end
 
 local function update_window_highlight(winid)
@@ -209,9 +217,13 @@ function M.enable()
     vim.api.nvim_create_autocmd({ "WinEnter" }, {
         group = augroup,
         callback = function()
-            local old_winid = vim.fn.win_getid(vim.fn.winnr("#"))
             local new_winid = vim.api.nvim_get_current_win()
-            update_window_highlight(old_winid)
+            local old_winid = vim.fn.win_getid(vim.fn.winnr("#"))
+            
+            -- Only update old window if it's valid and different from new window
+            if old_winid ~= 0 and old_winid ~= new_winid and vim.api.nvim_win_is_valid(old_winid) then
+                update_window_highlight(old_winid)
+            end
             update_window_highlight(new_winid)
         end,
         desc = "WinBender: Update window highlights on focus change"
@@ -224,6 +236,38 @@ function M.enable()
             vim.wo[new_winid].winhighlight = get_stored_winhighlight(old_winid)
         end,
         desc = "WinBender: Don't highlight new windows"
+    })
+    
+    -- Clear cache entry when a window is closed to prevent memory leaks
+    vim.api.nvim_create_autocmd("WinClosed", {
+        group = augroup,
+        callback = function(args)
+            local winid = tonumber(args.match)
+            if winid then
+                winhighlights[winid] = nil
+                adjusted_winhighlights[winid] = nil
+            end
+        end,
+        desc = "WinBender: Clear cache for closed windows"
+    })
+    
+    -- Clear all caches when colorscheme changes as highlight definitions may change
+    vim.api.nvim_create_autocmd("ColorScheme", {
+        group = augroup,
+        callback = function()
+            adjusted_winhighlights = {}
+        end,
+        desc = "WinBender: Clear adjusted highlight cache on colorscheme change"
+    })
+    
+    -- Clear adjusted cache when winhighlight option changes
+    vim.api.nvim_create_autocmd("OptionSet", {
+        group = augroup,
+        pattern = "winhighlight",
+        callback = function()
+            adjusted_winhighlights = {}
+        end,
+        desc = "WinBender: Clear adjusted highlight cache on winhighlight change"
     })
 end
 
