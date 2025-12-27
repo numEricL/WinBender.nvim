@@ -100,7 +100,7 @@ end
 local function adjust_highlight_group(group_name, factor)
     local hl = compat.nvim_get_hl(0, { name = group_name })
     if not hl.bg then
-        return nil
+        return {}
     end
 
     local adjusted_bg = {
@@ -116,15 +116,15 @@ end
 
 local function get_local_highlight_groups(winid)
     local hl_dict = {
-        ColorColumn = "ColorColumn",
-        CursorLine = "CursorLine",
+        ColorColumn  = "ColorColumn",
+        CursorLine   = "CursorLine",
         CursorLineNr = "CursorLineNr",
-        EndOfBuffer = "EndOfBuffer",
-        FoldColumn = "FoldColumn",
-        LineNr = "LineNr",
-        NonText = "NonText",
-        Normal = "Normal",
-        SignColumn = "SignColumn",
+        EndOfBuffer  = "EndOfBuffer",
+        FoldColumn   = "FoldColumn",
+        LineNr       = "LineNr",
+        NonText      = "NonText",
+        Normal       = "Normal",
+        SignColumn   = "SignColumn",
     }
 
     local pairs = vim.split(vim.wo[winid].winhighlight, ",")
@@ -146,12 +146,9 @@ local function concat_winhighlight_dict(hl_dict)
 end
 
 local function register_adjusted_hl_group(hl_group)
-    if not vim.fn.hlexists("WinBender" .. hl_group) then
-    else
+    if vim.fn.hlexists("WinBender" .. hl_group) == 0 then
         local adjusted_hl = adjust_highlight_group(hl_group, highlight_factor)
-        if adjusted_hl then
-            vim.api.nvim_set_hl(0, "WinBender" .. hl_group, adjusted_hl)
-        end
+        vim.api.nvim_set_hl(0, "WinBender" .. hl_group, adjusted_hl)
     end
     return "WinBender" .. hl_group
 end
