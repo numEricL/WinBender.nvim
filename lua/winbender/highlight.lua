@@ -6,7 +6,6 @@ local state  = require("winbender.state")
 local M = {}
 local highlight_factor = 0.25
 local augroup_name = "WinBenderHighlight"
-local winhighlights = {}
 local adjusted_winhighlights = {}
 
 local function rgb_to_hex(r, g, b)
@@ -154,17 +153,6 @@ local function register_adjusted_hl_group(hl_group)
     return "WinBender" .. hl_group
 end
 
-local function store_winhighlight(winid)
-    if not winhighlights[winid] then
-        winhighlights[winid] = vim.wo[winid].winhighlight
-    end
-end
-
-local function get_stored_winhighlight(winid)
-    store_winhighlight(winid)
-    return winhighlights[winid]
-end
-
 local function get_adjusted_winhighlight(winid)
     if adjusted_winhighlights[winid] then
         return adjusted_winhighlights[winid]
@@ -183,13 +171,12 @@ local function update_window_highlight(winid)
     if not state.validate_window(winid, silent) then
         return
     end
-    store_winhighlight(winid)
 
     local is_focused = (winid == core.get_current_window())
     if is_focused then
         vim.wo[winid].winhighlight = get_adjusted_winhighlight(winid)
     else
-        vim.wo[winid].winhighlight = get_stored_winhighlight(winid)
+        vim.wo[winid].winhighlight = state.get_highlight(winid)
     end
 end
 
@@ -199,7 +186,7 @@ function M.restore(winid)
         return
     end
 
-    vim.wo[winid].winhighlight = get_stored_winhighlight(winid)
+    vim.wo[winid].winhighlight = state.get_highlight(winid)
 end
 
 function M.enable()
@@ -221,7 +208,7 @@ function M.enable()
         callback = function()
             local new_winid = vim.api.nvim_get_current_win()
             local old_winid = vim.fn.win_getid(vim.fn.winnr("#"))
-            vim.wo[new_winid].winhighlight = get_stored_winhighlight(old_winid)
+            vim.wo[new_winid].winhighlight = state.get_highlight(old_winid)
         end,
         desc = "WinBender: Don't highlight new windows"
     })
@@ -230,14 +217,13 @@ end
 function M.disable()
     vim.api.nvim_del_augroup_by_name(augroup_name)
 
-    for winid, original_hl in pairs(winhighlights) do
+    for winid, original_hl in pairs(state.get_all_highlights()) do
         local silent = true
         if  state.validate_window(winid, silent) then
             vim.wo[winid].winhighlight = original_hl
         end
     end
-    winhighlights = {}
-    adjusted_winhighlights = {}
+    state.clear_stored_highlights()
 end
 
 return M
