@@ -217,8 +217,8 @@ function M.enable()
     vim.api.nvim_create_autocmd({ "WinEnter" }, {
         group = augroup,
         callback = function()
-            local new_winid = vim.api.nvim_get_current_win()
             local old_winid = vim.fn.win_getid(vim.fn.winnr("#"))
+            local new_winid = vim.api.nvim_get_current_win()
             
             -- Only update old window if it's valid and different from new window
             if old_winid ~= 0 and old_winid ~= new_winid and vim.api.nvim_win_is_valid(old_winid) then
