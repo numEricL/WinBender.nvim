@@ -1,17 +1,13 @@
 local M = {}
 
-local compat    = require("winbender.compat")
+local compat = require("winbender.compat")
 
 local init_winid = nil
 local win_configs = {}
-local win_highlights = {}
 
 local function save_config(winid)
     if win_configs[winid] == nil then
         win_configs[winid] = compat.nvim_win_get_config(winid)
-    end
-    if win_highlights[winid] == nil then
-        win_highlights[winid] = vim.wo[winid].winhighlight
     end
 end
 
@@ -38,18 +34,6 @@ end
 
 function M.get_all_configs()
     return win_configs
-end
-
-function M.get_highlight(winid)
-    return win_highlights[winid]
-end
-
-function M.get_all_highlights()
-    return win_highlights
-end
-
-function M.clear_stored_highlights()
-    win_highlights = {}
 end
 
 function M.validate_floating_window(winid, silent)
