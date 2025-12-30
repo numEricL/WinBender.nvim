@@ -37,7 +37,7 @@ local function reset_window(args)
         return
     end
     state.restore_config(winid)
-    core.reposition_floating_window(winid, 0, 0) -- for repositioning in bounds
+    core.reposition_in_bounds(winid)
     display.labels(winid)
 end
 
@@ -53,8 +53,8 @@ local function move_or_reposition(args, count)
     else
         local dir = (args.x_delta < 0) and 'h' or
                     (args.x_delta > 0) and 'l' or
-                    (args.y_delta < 0) and 'k' or
-                    (args.y_delta > 0) and 'j' or nil
+                    (args.y_delta < 0) and 'j' or
+                    (args.y_delta > 0) and 'k' or nil
         local count1 = math.max(1, count)
         if dir then
             vim.cmd('wincmd ' .. tostring(count1) .. dir)
@@ -96,8 +96,8 @@ local function snap(args)
     local edge_map = {
         left   = {dx = -max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
         right  = {dx =  max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
-        top    = {dx = 0, dy = -max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
-        bottom = {dx = 0, dy =  max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
+        top    = {dx = 0, dy =  max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
+        bottom = {dx = 0, dy = -max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
     }
 
     local d = edge_map[args.edge]
@@ -149,8 +149,8 @@ local function get_maps()
 
         move_left  = { map = keys.move_left,  func = move_or_reposition, args = {x_delta = -1, y_delta =  0, step = p_sz.x} },
         move_right = { map = keys.move_right, func = move_or_reposition, args = {x_delta =  1, y_delta =  0, step = p_sz.x} },
-        move_down  = { map = keys.move_down,  func = move_or_reposition, args = {x_delta =  0, y_delta =  1, step = p_sz.y} },
-        move_up    = { map = keys.move_up,    func = move_or_reposition, args = {x_delta =  0, y_delta = -1, step = p_sz.y} },
+        move_down  = { map = keys.move_down,  func = move_or_reposition, args = {x_delta =  0, y_delta = -1, step = p_sz.y} },
+        move_up    = { map = keys.move_up,    func = move_or_reposition, args = {x_delta =  0, y_delta =  1, step = p_sz.y} },
 
         increase_left   = { map = keys.increase_left,   func = resize_edge, args = {edge = 'left',   step = s_sz.x} },
         increase_right  = { map = keys.increase_right,  func = resize_edge, args = {edge = 'right',  step = s_sz.x} },

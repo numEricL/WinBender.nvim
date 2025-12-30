@@ -114,11 +114,10 @@ function M.reposition_in_bounds(winid)
     compat.nvim_win_set_config(winid, cfg)
 end
 
--- x,y is a cartesian coordinate system with y reflected and origin at top-left
 function M.reposition_floating_window(winid, x_delta, y_delta)
     local cfg = compat.nvim_win_get_config(winid)
     cfg.col = cfg.col + x_delta
-    cfg.row = cfg.row + y_delta
+    cfg.row = cfg.row - y_delta
     win.reposition_in_bounds(cfg)
     compat.nvim_win_set_config(winid, cfg)
 end
