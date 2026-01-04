@@ -7,14 +7,14 @@ local M = {}
 
 local function win_midpoint(winid)
     local top_left_pos = vim.api.nvim_win_get_position(winid)
-    local win_size = win.get_win_size(compat.nvim_win_get_config(winid))
+    local win_size = win.get_size(compat.nvim_win_get_config(winid))
     local row, col = top_left_pos[1], top_left_pos[2]
     return {row + win_size['height']/2, col + win_size['width']/2}
 end
 
 local function win_to_box(winid)
     local coord = vim.api.nvim_win_get_position(winid)
-    local win_size = win.get_win_size(compat.nvim_win_get_config(winid))
+    local win_size = win.get_size(compat.nvim_win_get_config(winid))
     return { x = coord[2], y = coord[1], dx = win_size['width'], dy = win_size['height'] }
 end
 
@@ -31,8 +31,8 @@ local function get_edge_info(winid)
     local top_left_pos = vim.api.nvim_win_get_position(winid)
     local row = top_left_pos[1]
     local col = top_left_pos[2]
-    local win_size = win.get_win_size(compat.nvim_win_get_config(winid))
-    local screen = win.get_screen_size()
+    local win_size = win.get_size(compat.nvim_win_get_config(winid))
+    local screen = win.get_floatable_screen_size()
     local top_offset = 0
     local bot_offset = 0
     local silent = true
@@ -96,7 +96,7 @@ function M.orientation_new_docked_window(winid_float, winid_docked)
     -- window by its diagonals.
     local midpoint_float  = win_midpoint(winid_float)
     local midpoint_docked = win_midpoint(winid_docked)
-    local win_size = win.get_win_size(compat.nvim_win_get_config(winid_docked))
+    local win_size = win.get_size(compat.nvim_win_get_config(winid_docked))
     local slope = win_size['height'] / win_size['width']
 
     local x = midpoint_float[2] - midpoint_docked[2]
@@ -139,7 +139,8 @@ function M.dock_floating_window(winid)
 
     local bufnr = vim.api.nvim_win_get_buf(winid)
     local new_winid = vim.api.nvim_open_win(bufnr, false, new_cfg)
-    win.copy_options(winid, new_winid)
+    win.set_options(new_winid, win.get_options(winid))
+    win.set_variables(new_winid, win.get_variables(winid))
     vim.api.nvim_win_close(winid, false)
     return new_winid
 end
@@ -173,7 +174,8 @@ function M.float_docked_window(winid)
         anchor = "NW",
     }
     local new_winid = vim.api.nvim_open_win(bufnr, false, new_config)
-    win.copy_options(winid, new_winid)
+    win.set_options(new_winid, win.get_options(winid))
+    win.set_variables(new_winid, win.get_variables(winid))
     vim.api.nvim_win_close(winid, false)
     return new_winid
 end
@@ -249,7 +251,8 @@ return M
 -- 
 --     local bufnr = vim.api.nvim_win_get_buf(winid)
 --     local new_winid = vim.api.nvim_open_win(bufnr, false, new_config)
---     copy_win_options(winid, new_winid)
+--     win.set_options(new_winid, win.get_options(winid))
+--     win.set_variables(new_winid, win.get_variables(winid))
 --     vim.api.nvim_win_close(winid, false)
 --     local next_focus = core.find_next_floating_window('forward')
 --     next_focus = next_focus or new_winid

@@ -5,7 +5,7 @@ local utils   = require("winbender.utils")
 
 -- screen size is defined by where floating windows can be placed, it includes
 -- the tabline and statusline, but not the command line
-function M.get_screen_size()
+function M.get_floatable_screen_size()
     local tabline_height = 0
     if vim.o.showtabline == 1 and #vim.api.nvim_list_tabpages() > 1 then
         tabline_height = 1
@@ -29,6 +29,14 @@ function M.get_screen_size()
     return screen
 end
 
+function M.get_screen_size()
+    local screen = {
+        height = vim.o.lines,
+        width = vim.o.columns,
+    }
+    return screen
+end
+
 function M.get_border_size(win_config)
     local border = win_config.border
     local width = 0
@@ -47,7 +55,7 @@ function M.get_border_size(win_config)
     return width, height
 end
 
-function M.get_win_size(win_config)
+function M.get_size(win_config)
     local width = win_config.width
     local height = win_config.height
     local border_width, border_height = M.get_border_size(win_config)
@@ -58,10 +66,20 @@ function M.get_win_size(win_config)
     return win_size
 end
 
+function M.get_size_as_ratio(win_config)
+    local win_size = M.get_size(win_config)
+    local screen_size = M.get_floatable_screen_size()
+    local size_percentage = {
+        width = (win_size.width / screen_size.width),
+        height = (win_size.height / screen_size.height)
+    }
+    return size_percentage
+end
+
 local function get_max_resize_deltas(win_config)
     local anchor = win_config.anchor
     local row, col = win_config.row, win_config.col
-    local win_size = M.get_win_size(win_config)
+    local win_size = M.get_size(win_config)
     local width_bound  = (anchor:sub(2,2) == 'W') and (vim.o.columns - col - win_size['width']) or (col - win_size['width'])
     local height_bound = (anchor:sub(1,1) == 'N') and (vim.o.lines - vim.o.cmdheight - row - win_size['height']) or (row - win_size['height'])
     return width_bound, height_bound
@@ -69,7 +87,7 @@ end
 
 local function get_pos_bound(win_config, dir)
     local anchor = win_config.anchor
-    local win_size = M.get_win_size(win_config)
+    local win_size = M.get_size(win_config)
     if dir == 'N' then
         return anchor:sub(1,1) == 'N' and 0 or win_size['height']
     elseif dir == 'S' then
@@ -97,7 +115,7 @@ function M.reposition_in_bounds(win_config)
 end
 
 function M.set_anchor(win_config, anchor)
-    local win_size = M.get_win_size(win_config)
+    local win_size = M.get_size(win_config)
 
     local old_anchor = win_config.anchor
     local x_old = (old_anchor:sub(2,2) == 'E' and 1) or 0
@@ -112,7 +130,7 @@ function M.set_anchor(win_config, anchor)
 end
 
 function M.pixel_orientation(win_config)
-    local win_size = M.get_win_size(win_config)
+    local win_size = M.get_size(win_config)
     return (win_size.width*options.cell_pixel_ratio_w_to_h > win_size.height) and 'horizontal' or 'vertical'
 end
 
@@ -123,7 +141,7 @@ function M.pixel_transpose(win_config)
     win_config.height = utils.math_round(width*options.cell_pixel_ratio_w_to_h)
 end
 
-local function get_options(winid)
+function M.get_options(winid)
     local win_opts = {}
     local wo = vim.wo[winid]
     local all_opts = vim.api.nvim_get_all_options_info()
@@ -135,16 +153,31 @@ local function get_options(winid)
     return win_opts
 end
 
-local function set_options(winid, win_opts)
+function M.set_options(winid, win_opts)
     local wo = vim.wo[winid]
     for opt, val in pairs(win_opts) do
         pcall(function() wo[opt] = val end)
     end
 end
 
-function M.copy_options(src_winid, dst_winid)
-    local src_opts = get_options(src_winid)
-    set_options(dst_winid, src_opts)
+function M.get_variables(winid)
+    return vim.fn.getwinvar(winid, "")
+end
+
+function M.set_variables(winid, win_vars)
+    for var, val in pairs(win_vars) do
+        vim.fn.setwinvar(winid, var, val)
+    end
+end
+
+function M.get_view(winid)
+    return vim.api.nvim_win_call(winid, vim.fn.winsaveview)
+end
+
+function M.set_view(winid, view)
+    vim.api.nvim_win_call(winid, function()
+        vim.fn.winrestview(view)
+    end)
 end
 
 return M

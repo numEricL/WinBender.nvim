@@ -35,11 +35,6 @@ local defaults = {
         snap_down  = 'gj',
         snap_up    = 'gk',
         snap_right = 'gl',
-
-        anchor_NW = 'q',
-        anchor_NE = 'w',
-        anchor_SW = 'a',
-        anchor_SE = 's',
     },
     step_size = {
         position_x = 5,

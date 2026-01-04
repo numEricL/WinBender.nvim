@@ -75,7 +75,6 @@ While active, you can:
   - Reposition floating windows
   - Resize any window (floating or docked)
   - Switch between docked splits using familiar vim navigation
-  - Set anchor points for floating windows
   - Reset windows to their original configuration
   - Use the mouse to drag floating windows
 
@@ -121,8 +120,7 @@ g1-g9           Jump to numbered floating window
 h/j/k/l         Move floating window or change docked focus
 H/J/K/L         Expand window in specified direction
 <C-h/j/k/l>     Shrink window in specified direction
-gh/gj/gk/gl     Snap floating window to screen edge
-q/w/a/s         Set anchor to NW/NE/SW/SE (floating only)
+gh/gj/gk/gl     Snap window to screen edge
 u               Reset window to original configuration
 
 All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
@@ -162,17 +160,6 @@ L               Expand window to the right
 <C-l>           Shrink window from the left
 
 
-                                               *winbender-keymap-anchor*
-q               Set anchor to NorthWest (top-left)
-w               Set anchor to NorthEast (top-right)
-a               Set anchor to SouthWest (bottom-left)
-s               Set anchor to SouthEast (bottom-right)
-
-Note: Changing the anchor affects how the window is positioned relative to
-its row/col coordinates. The window will reposition to maintain its visual
-location while changing the reference point. Only applicable to floating
-windows.
-
                                                *winbender-keymap-reset*
 u               Reset window to its original configuration (position, size,
                 and anchor as they were when WinBender mode was activated)
@@ -182,6 +169,10 @@ gh              Snap window to left edge of screen
 gj              Snap window to bottom edge of screen
 gk              Snap window to top edge of screen
 gl              Snap window to right edge of screen
+
+Note: For floating windows, snap moves them to the edge and expands them to
+fill from that edge. For docked windows, snap moves them to the screen edge
+while preserving their aspect ratio.
 
                                                 *winbender-keymap-dock-float*
 gf              Convert current docked window to floating window
@@ -197,18 +188,22 @@ Docking and Floating~
                                                     *winbender-dock-float*
 
 WinBender lets you convert between docked window splits and floating windows.
-Window sizes are preserved when possible, as well as window-local options.
-When docking a floating window, WinBender first determines the closest docked
-window based on greatest overlap, then determines the best split direction by
-comparing the midpoints of the two windows. These implementation details are
-subject to change in future releases.
+Window sizes are preserved when possible, as well as window-local options and
+window-local variables. When docking a floating window, WinBender first
+determines the closest docked window based on greatest overlap, then determines
+the best split direction by comparing the midpoints of the two windows. These
+implementation details are subject to change in future releases.
+
+When two corners of a floating window are matched to screen corners and is
+docked, a new top-level split is created at that position.
 
 Snap Windows~
                                                     *winbender-snap-windows*
 
-Floating windows can be quickly snapped to screen edges. When two corners of
-a floating window are matched to screen corners and is docked, a new top-level
-split is created at that position.
+Windows can be quickly snapped to screen edges using gh/gj/gk/gl keymaps:
+  - Floating windows: Snapped to edges and expanded to fill from that edge
+  - Docked windows: Moved to the screen edge while preserving their aspect
+    ratio
 
 Mouse Support~
                                                     *winbender-mouse-support*
@@ -278,11 +273,6 @@ Configure WinBender by calling the setup function. Default configuration:
         snap_down  = 'gj',
         snap_up    = 'gk',
         snap_right = 'gl',
-
-        anchor_NW = 'q',
-        anchor_NE = 'w',
-        anchor_SW = 'a',
-        anchor_SE = 's',
       },
       step_size = {
         position_x = 5,

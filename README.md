@@ -90,8 +90,7 @@ are highlighted, and the following keymaps become available:
 | `h/j/k/l`     | Move floating window or change docked focus |
 | `H/J/K/L`     | Expand window in specified direction        |
 | `<C-h/j/k/l>` | Shrink window in specified direction        |
-| `gh/gj/gk/gl` | Snap floating window to screen edge         |
-| `q/w/a/s`     | Set anchor to NW/NE/SW/SE (floating only)   |
+| `gh/gj/gk/gl` | Snap window to screen edge                  |
 | `u`           | Reset window to original configuration      |
 
 All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
@@ -103,17 +102,14 @@ All keymaps support count prefixes (e.g., `5j` moves down 5 steps).
 ### Docking and Floating
 
 WinBender lets you convert between docked window splits and floating windows.
-Window sizes are preserved when possible, as well as window-local options. When
-docking a floating window WinBender first determines the closest docked window
-based on greatest overlap, then determines the best split direction by comparing
-the midpoints of the two windows. These implementation details are subject to
-change in future releases.
+Window sizes are preserved when possible, as well as window-local options and 
+window-local variables.
 
 ### Snap Windows
 
-Floating windows can be quickly snapped to screen edges. When two corners of a
-floating window are matched to screen corners and it is docked, a new top-level
-split is created at that position.
+Windows can be quickly snapped to screen edges using `gh/gj/gk/gl` keymaps:
+- **Floating windows**: Snapped to edges and expanded to fill from that edge
+- **Docked windows**: Moved to the screen edge while preserving their aspect ratio
 
 ### Mouse Support
 
@@ -126,7 +122,7 @@ input.
 require('winbender').setup({
   toggle_key = '<leader>f',  -- Key to toggle WinBender mode (default: nil)
   keymaps = {
-    -- Override default keymaps (see defaults below)
+    -- Override default keymaps (see :help winbender-config-keymaps)
   },
   mouse_enabled = true,      -- Enable mouse drag and drop (default: true)
   step_size = {

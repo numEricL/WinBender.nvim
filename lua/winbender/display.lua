@@ -130,6 +130,7 @@ function M.labels(winid)
         title = "[g" .. qa_index .. "]"
     end
     title = title .. "[" .. winid .. "]"
+    title = title .. "[" .. vim.fn.win_id2win(winid) .. "]"
     local footer = ""
 
     local silent = true

@@ -1,7 +1,7 @@
 local M = {}
 
-local core         = require("winbender.core")
 local compat       = require("winbender.compat")
+local core         = require("winbender.core")
 local display      = require("winbender.display")
 local dock         = require("winbender.dock")
 local highlight    = require("winbender.highlight")
@@ -9,6 +9,7 @@ local mouse        = require("winbender.mouse")
 local options      = require("winbender.config").options
 local quick_access = require("winbender.quick_access")
 local state        = require("winbender.state")
+local win          = require("winbender.win")
 
 local keymaps = {}
 
@@ -50,7 +51,7 @@ local function move_or_reposition(args, count)
         local step = (count == 0) and args.step or count
         core.reposition_floating_window(winid, step*args.x_delta, step*args.y_delta)
         display.labels(winid)
-    else
+    elseif type == 'docked' then
         local dir = (args.x_delta < 0) and 'h' or
                     (args.x_delta > 0) and 'l' or
                     (args.y_delta < 0) and 'j' or
@@ -72,13 +73,12 @@ local function update_anchor(args)
 end
 
 local function resize_edge(args, count)
-    local winid = core.get_current_window()
+    local winid, type = core.get_current_window()
     local sign = (args.step > 0) and 1 or -1
     local step = (count == 0) and args.step or sign*count
-    local silent = true
-    if state.validate_docked_window(winid, silent) then
+    if type == 'docked' then
         core.resize_docked_window(winid, args.edge, step)
-    elseif state.validate_floating_window(winid, silent) then
+    elseif type == 'floating' then
         core.resize_floating_window(winid, args.edge, step)
     else
         return
@@ -87,24 +87,41 @@ local function resize_edge(args, count)
 end
 
 local function snap(args)
-    local winid = core.get_current_floating_window()
+    local winid, type = core.get_current_window()
     if not winid then
         return
     end
-    local max_row = vim.o.lines
-    local max_col = vim.o.columns
-    local edge_map = {
-        left   = {dx = -max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
-        right  = {dx =  max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
-        top    = {dx = 0, dy =  max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
-        bottom = {dx = 0, dy = -max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
-    }
+    if type == 'docked' then
+        local ratios = win.get_size_as_ratio(compat.nvim_win_get_config(winid))
+        local min_ratio = math.min(ratios.width, ratios.height)
+        local edge_map = {
+            left   = 'H',
+            right  = 'L',
+            top    = 'K',
+            bottom = 'J',
+        }
+        vim.cmd('wincmd ' .. edge_map[args.edge])
+        if args.edge == 'left' or args.edge == 'right' then
+            vim.cmd('vertical resize ' .. tostring(min_ratio*win.get_screen_size().width))
+        else
+            vim.cmd('resize ' .. tostring(min_ratio*win.get_screen_size().height))
+        end
+    elseif type == 'floating' then
+        local max_row = vim.o.lines
+        local max_col = vim.o.columns
+        local edge_map = {
+            left   = {dx = -max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
+            right  = {dx =  max_col, dy = 0, edge1 = 'top',  edge2 = 'bottom', step = max_row},
+            top    = {dx = 0, dy =  max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
+            bottom = {dx = 0, dy = -max_row, edge1 = 'left', edge2 = 'right',  step = max_col},
+        }
 
-    local d = edge_map[args.edge]
-    core.make_square_floating_window(winid)
-    core.reposition_floating_window(winid, d.dx, d.dy)
-    resize_edge({edge = d.edge1, step = d.step}, 0)
-    resize_edge({edge = d.edge2, step = d.step}, 0)
+        local d = edge_map[args.edge]
+        core.make_min_square_floating_window(winid)
+        core.reposition_floating_window(winid, d.dx, d.dy)
+        resize_edge({edge = d.edge1, step = d.step}, 0)
+        resize_edge({edge = d.edge2, step = d.step}, 0)
+    end
 end
 
 ---@diagnostic disable-next-line: unused-local

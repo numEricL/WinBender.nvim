@@ -164,7 +164,7 @@ function M.resize_docked_window(winid, edge, delta)
     end
 end
 
-function M.make_square_floating_window(winid)
+function M.make_min_square_floating_window(winid)
     local cfg = compat.nvim_win_get_config(winid)
     local ratio = options.cell_pixel_ratio_w_to_h
     local width, height = cfg.width, cfg.height
