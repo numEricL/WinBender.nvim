@@ -10,6 +10,7 @@ local defaults = {
         focus_prev_float = 'F',
         focus_next_dock  = 'n',
         focus_prev_dock  = 'N',
+        focus_winnr      = 'w',
 
         dock_window  = 'gd',
         float_window = 'gf',

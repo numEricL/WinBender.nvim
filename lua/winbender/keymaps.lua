@@ -203,6 +203,10 @@ local function focus_quick_access(id)
     core.focus_window(winid)
 end
 
+local function focus_winnr(nr)
+    vim.cmd(nr .. 'wincmd w')
+end
+
 local function cyclops_integration()
     local keys = options.keymaps
     local cyclops_opts = options.cyclops_opts
